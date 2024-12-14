@@ -51,34 +51,6 @@ const CharactersData = [
 
     // type code here for "relation_many" field
   },
-
-  {
-    name: 'Mia the Scientist',
-
-    // type code here for "images" field
-
-    // type code here for "relation_one" field
-
-    // type code here for "relation_many" field
-
-    // type code here for "relation_many" field
-
-    // type code here for "relation_many" field
-  },
-
-  {
-    name: 'Noah the Explorer',
-
-    // type code here for "images" field
-
-    // type code here for "relation_one" field
-
-    // type code here for "relation_many" field
-
-    // type code here for "relation_many" field
-
-    // type code here for "relation_many" field
-  },
 ];
 
 const ScenariosData = [
@@ -100,18 +72,6 @@ const ScenariosData = [
 
     content: 'Leo examines the crime scene for clues to solve the mystery.',
   },
-
-  {
-    title: 'Lab Experiment',
-
-    content: 'Mia conducts a groundbreaking experiment in her lab.',
-  },
-
-  {
-    title: 'Desert Trek',
-
-    content: 'Noah embarks on a journey across the vast desert.',
-  },
 ];
 
 const TraitsData = [
@@ -125,14 +85,6 @@ const TraitsData = [
 
   {
     description: 'Wise',
-  },
-
-  {
-    description: 'Mysterious',
-  },
-
-  {
-    description: 'Observant',
   },
 ];
 
@@ -157,22 +109,6 @@ const VersionsData = [
     version_number: 'V1.0',
 
     created_on: new Date('2023-10-02T09:00:00Z'),
-
-    // type code here for "relation_one" field
-  },
-
-  {
-    version_number: 'V1.2',
-
-    created_on: new Date('2023-10-10T14:00:00Z'),
-
-    // type code here for "relation_one" field
-  },
-
-  {
-    version_number: 'V1.0',
-
-    created_on: new Date('2023-10-03T11:00:00Z'),
 
     // type code here for "relation_one" field
   },
@@ -212,28 +148,6 @@ async function associateCharacterWithCreator() {
   });
   if (Character2?.setCreator) {
     await Character2.setCreator(relatedCreator2);
-  }
-
-  const relatedCreator3 = await Users.findOne({
-    offset: Math.floor(Math.random() * (await Users.count())),
-  });
-  const Character3 = await Characters.findOne({
-    order: [['id', 'ASC']],
-    offset: 3,
-  });
-  if (Character3?.setCreator) {
-    await Character3.setCreator(relatedCreator3);
-  }
-
-  const relatedCreator4 = await Users.findOne({
-    offset: Math.floor(Math.random() * (await Users.count())),
-  });
-  const Character4 = await Characters.findOne({
-    order: [['id', 'ASC']],
-    offset: 4,
-  });
-  if (Character4?.setCreator) {
-    await Character4.setCreator(relatedCreator4);
   }
 }
 
@@ -275,28 +189,6 @@ async function associateVersionWithCharacter() {
   });
   if (Version2?.setCharacter) {
     await Version2.setCharacter(relatedCharacter2);
-  }
-
-  const relatedCharacter3 = await Characters.findOne({
-    offset: Math.floor(Math.random() * (await Characters.count())),
-  });
-  const Version3 = await Versions.findOne({
-    order: [['id', 'ASC']],
-    offset: 3,
-  });
-  if (Version3?.setCharacter) {
-    await Version3.setCharacter(relatedCharacter3);
-  }
-
-  const relatedCharacter4 = await Characters.findOne({
-    offset: Math.floor(Math.random() * (await Characters.count())),
-  });
-  const Version4 = await Versions.findOne({
-    order: [['id', 'ASC']],
-    offset: 4,
-  });
-  if (Version4?.setCharacter) {
-    await Version4.setCharacter(relatedCharacter4);
   }
 }
 

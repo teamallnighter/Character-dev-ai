@@ -144,7 +144,7 @@ export default function WebSite() {
         <FeaturesSection
           projectName={'Character dev ai'}
           image={['Innovative AI features illustration']}
-          withBg={0}
+          withBg={1}
           features={features_points}
           mainText={`Innovative Features of ${projectName}`}
           subTitle={`Explore the powerful features that make ${projectName} the ultimate tool for AI character development. Enhance your creative process with these innovative solutions.`}
