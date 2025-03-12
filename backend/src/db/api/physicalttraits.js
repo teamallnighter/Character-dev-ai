@@ -6,17 +6,15 @@ const Utils = require('../utils');
 const Sequelize = db.Sequelize;
 const Op = Sequelize.Op;
 
-module.exports = class CharactersDBApi {
+module.exports = class PhysicalttraitsDBApi {
   static async create(data, options) {
     const currentUser = (options && options.currentUser) || { id: null };
     const transaction = (options && options.transaction) || undefined;
 
-    const characters = await db.characters.create(
+    const physicalttraits = await db.physicalttraits.create(
       {
         id: data.id || undefined,
 
-        name: data.name || null,
-        Description: data.Description || null,
         importHash: data.importHash || null,
         createdById: currentUser.id,
         updatedById: currentUser.id,
@@ -24,33 +22,11 @@ module.exports = class CharactersDBApi {
       { transaction },
     );
 
-    await characters.setCreator(data.creator || null, {
+    await physicalttraits.setStyle(data.Style || null, {
       transaction,
     });
 
-    await characters.setTraits(data.traits || [], {
-      transaction,
-    });
-
-    await characters.setScenarios(data.scenarios || [], {
-      transaction,
-    });
-
-    await characters.setVersions(data.versions || [], {
-      transaction,
-    });
-
-    await FileDBApi.replaceRelationFiles(
-      {
-        belongsTo: db.characters.getTableName(),
-        belongsToColumn: 'image',
-        belongsToId: characters.id,
-      },
-      data.image,
-      options,
-    );
-
-    return characters;
+    return physicalttraits;
   }
 
   static async bulkImport(data, options) {
@@ -58,11 +34,9 @@ module.exports = class CharactersDBApi {
     const transaction = (options && options.transaction) || undefined;
 
     // Prepare data - wrapping individual data transformations in a map() method
-    const charactersData = data.map((item, index) => ({
+    const physicalttraitsData = data.map((item, index) => ({
       id: item.id || undefined,
 
-      name: item.name || null,
-      Description: item.Description || null,
       importHash: item.importHash || null,
       createdById: currentUser.id,
       updatedById: currentUser.id,
@@ -70,76 +44,45 @@ module.exports = class CharactersDBApi {
     }));
 
     // Bulk create items
-    const characters = await db.characters.bulkCreate(charactersData, {
-      transaction,
-    });
+    const physicalttraits = await db.physicalttraits.bulkCreate(
+      physicalttraitsData,
+      { transaction },
+    );
 
     // For each item created, replace relation files
 
-    for (let i = 0; i < characters.length; i++) {
-      await FileDBApi.replaceRelationFiles(
-        {
-          belongsTo: db.characters.getTableName(),
-          belongsToColumn: 'image',
-          belongsToId: characters[i].id,
-        },
-        data[i].image,
-        options,
-      );
-    }
-
-    return characters;
+    return physicalttraits;
   }
 
   static async update(id, data, options) {
     const currentUser = (options && options.currentUser) || { id: null };
     const transaction = (options && options.transaction) || undefined;
 
-    const characters = await db.characters.findByPk(id, {}, { transaction });
+    const physicalttraits = await db.physicalttraits.findByPk(
+      id,
+      {},
+      { transaction },
+    );
 
-    await characters.update(
+    await physicalttraits.update(
       {
-        name: data.name || null,
-        Description: data.Description || null,
         updatedById: currentUser.id,
       },
       { transaction },
     );
 
-    await characters.setCreator(data.creator || null, {
+    await physicalttraits.setStyle(data.Style || null, {
       transaction,
     });
 
-    await characters.setTraits(data.traits || [], {
-      transaction,
-    });
-
-    await characters.setScenarios(data.scenarios || [], {
-      transaction,
-    });
-
-    await characters.setVersions(data.versions || [], {
-      transaction,
-    });
-
-    await FileDBApi.replaceRelationFiles(
-      {
-        belongsTo: db.characters.getTableName(),
-        belongsToColumn: 'image',
-        belongsToId: characters.id,
-      },
-      data.image,
-      options,
-    );
-
-    return characters;
+    return physicalttraits;
   }
 
   static async deleteByIds(ids, options) {
     const currentUser = (options && options.currentUser) || { id: null };
     const transaction = (options && options.transaction) || undefined;
 
-    const characters = await db.characters.findAll({
+    const physicalttraits = await db.physicalttraits.findAll({
       where: {
         id: {
           [Op.in]: ids,
@@ -149,24 +92,24 @@ module.exports = class CharactersDBApi {
     });
 
     await db.sequelize.transaction(async (transaction) => {
-      for (const record of characters) {
+      for (const record of physicalttraits) {
         await record.update({ deletedBy: currentUser.id }, { transaction });
       }
-      for (const record of characters) {
+      for (const record of physicalttraits) {
         await record.destroy({ transaction });
       }
     });
 
-    return characters;
+    return physicalttraits;
   }
 
   static async remove(id, options) {
     const currentUser = (options && options.currentUser) || { id: null };
     const transaction = (options && options.transaction) || undefined;
 
-    const characters = await db.characters.findByPk(id, options);
+    const physicalttraits = await db.physicalttraits.findByPk(id, options);
 
-    await characters.update(
+    await physicalttraits.update(
       {
         deletedBy: currentUser.id,
       },
@@ -175,45 +118,28 @@ module.exports = class CharactersDBApi {
       },
     );
 
-    await characters.destroy({
+    await physicalttraits.destroy({
       transaction,
     });
 
-    return characters;
+    return physicalttraits;
   }
 
   static async findBy(where, options) {
     const transaction = (options && options.transaction) || undefined;
 
-    const characters = await db.characters.findOne({ where }, { transaction });
+    const physicalttraits = await db.physicalttraits.findOne(
+      { where },
+      { transaction },
+    );
 
-    if (!characters) {
-      return characters;
+    if (!physicalttraits) {
+      return physicalttraits;
     }
 
-    const output = characters.get({ plain: true });
+    const output = physicalttraits.get({ plain: true });
 
-    output.versions_character = await characters.getVersions_character({
-      transaction,
-    });
-
-    output.image = await characters.getImage({
-      transaction,
-    });
-
-    output.creator = await characters.getCreator({
-      transaction,
-    });
-
-    output.traits = await characters.getTraits({
-      transaction,
-    });
-
-    output.scenarios = await characters.getScenarios({
-      transaction,
-    });
-
-    output.versions = await characters.getVersions({
+    output.Style = await physicalttraits.getStyle({
       transaction,
     });
 
@@ -233,58 +159,8 @@ module.exports = class CharactersDBApi {
     let where = {};
     let include = [
       {
-        model: db.users,
-        as: 'creator',
-      },
-
-      {
-        model: db.traits,
-        as: 'traits',
-        through: filter.traits
-          ? {
-              where: {
-                [Op.or]: filter.traits.split('|').map((item) => {
-                  return { ['Id']: Utils.uuid(item) };
-                }),
-              },
-            }
-          : null,
-        required: filter.traits ? true : null,
-      },
-
-      {
-        model: db.scenarios,
-        as: 'scenarios',
-        through: filter.scenarios
-          ? {
-              where: {
-                [Op.or]: filter.scenarios.split('|').map((item) => {
-                  return { ['Id']: Utils.uuid(item) };
-                }),
-              },
-            }
-          : null,
-        required: filter.scenarios ? true : null,
-      },
-
-      {
-        model: db.versions,
-        as: 'versions',
-        through: filter.versions
-          ? {
-              where: {
-                [Op.or]: filter.versions.split('|').map((item) => {
-                  return { ['Id']: Utils.uuid(item) };
-                }),
-              },
-            }
-          : null,
-        required: filter.versions ? true : null,
-      },
-
-      {
-        model: db.file,
-        as: 'image',
+        model: db.styles,
+        as: 'Style',
       },
     ];
 
@@ -293,24 +169,6 @@ module.exports = class CharactersDBApi {
         where = {
           ...where,
           ['id']: Utils.uuid(filter.id),
-        };
-      }
-
-      if (filter.name) {
-        where = {
-          ...where,
-          [Op.and]: Utils.ilike('characters', 'name', filter.name),
-        };
-      }
-
-      if (filter.Description) {
-        where = {
-          ...where,
-          [Op.and]: Utils.ilike(
-            'characters',
-            'Description',
-            filter.Description,
-          ),
         };
       }
 
@@ -326,14 +184,14 @@ module.exports = class CharactersDBApi {
         };
       }
 
-      if (filter.creator) {
-        const listItems = filter.creator.split('|').map((item) => {
+      if (filter.Style) {
+        const listItems = filter.Style.split('|').map((item) => {
           return Utils.uuid(item);
         });
 
         where = {
           ...where,
-          creatorId: { [Op.or]: listItems },
+          StyleId: { [Op.or]: listItems },
         };
       }
 
@@ -365,7 +223,7 @@ module.exports = class CharactersDBApi {
     let { rows, count } = options?.countOnly
       ? {
           rows: [],
-          count: await db.characters.count({
+          count: await db.physicalttraits.count({
             where,
             include,
             distinct: true,
@@ -378,7 +236,7 @@ module.exports = class CharactersDBApi {
             transaction,
           }),
         }
-      : await db.characters.findAndCountAll({
+      : await db.physicalttraits.findAndCountAll({
           where,
           include,
           distinct: true,
@@ -401,21 +259,21 @@ module.exports = class CharactersDBApi {
       where = {
         [Op.or]: [
           { ['id']: Utils.uuid(query) },
-          Utils.ilike('characters', 'name', query),
+          Utils.ilike('physicalttraits', 'id', query),
         ],
       };
     }
 
-    const records = await db.characters.findAll({
-      attributes: ['id', 'name'],
+    const records = await db.physicalttraits.findAll({
+      attributes: ['id', 'id'],
       where,
       limit: limit ? Number(limit) : undefined,
-      orderBy: [['name', 'ASC']],
+      orderBy: [['id', 'ASC']],
     });
 
     return records.map((record) => ({
       id: record.id,
-      label: record.name,
+      label: record.id,
     }));
   }
 };

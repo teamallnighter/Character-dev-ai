@@ -48,6 +48,8 @@ const EditCharacters = () => {
     scenarios: [],
 
     versions: [],
+
+    Description: '',
   };
   const [initialValues, setInitialValues] = useState(initVals);
 
@@ -163,6 +165,14 @@ const EditCharacters = () => {
                   options={initialValues.versions}
                   itemRef={'versions'}
                   showField={'version_number'}
+                ></Field>
+              </FormField>
+
+              <FormField label='Description' hasTextareaHeight>
+                <Field
+                  name='Description'
+                  id='Description'
+                  component={RichTextField}
                 ></Field>
               </FormField>
 

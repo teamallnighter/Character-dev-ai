@@ -26,34 +26,25 @@ import { SelectFieldMany } from '../../components/SelectFieldMany';
 import { SwitchField } from '../../components/SwitchField';
 import { RichTextField } from '../../components/RichTextField';
 
-import { update, fetch } from '../../stores/characters/charactersSlice';
+import {
+  update,
+  fetch,
+} from '../../stores/physicalttraits/physicalttraitsSlice';
 import { useAppDispatch, useAppSelector } from '../../stores/hooks';
 import { useRouter } from 'next/router';
 import { saveFile } from '../../helpers/fileSaver';
 import dataFormatter from '../../helpers/dataFormatter';
 import ImageField from '../../components/ImageField';
 
-const EditCharactersPage = () => {
+const EditPhysicalttraitsPage = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const initVals = {
-    name: '',
-
-    image: [],
-
-    creator: '',
-
-    traits: [],
-
-    scenarios: [],
-
-    versions: [],
-
-    Description: '',
+    Style: '',
   };
   const [initialValues, setInitialValues] = useState(initVals);
 
-  const { characters } = useAppSelector((state) => state.characters);
+  const { physicalttraits } = useAppSelector((state) => state.physicalttraits);
 
   const { id } = router.query;
 
@@ -62,37 +53,37 @@ const EditCharactersPage = () => {
   }, [id]);
 
   useEffect(() => {
-    if (typeof characters === 'object') {
-      setInitialValues(characters);
+    if (typeof physicalttraits === 'object') {
+      setInitialValues(physicalttraits);
     }
-  }, [characters]);
+  }, [physicalttraits]);
 
   useEffect(() => {
-    if (typeof characters === 'object') {
+    if (typeof physicalttraits === 'object') {
       const newInitialVal = { ...initVals };
 
       Object.keys(initVals).forEach(
-        (el) => (newInitialVal[el] = characters[el] || ''),
+        (el) => (newInitialVal[el] = physicalttraits[el] || ''),
       );
 
       setInitialValues(newInitialVal);
     }
-  }, [characters]);
+  }, [physicalttraits]);
 
   const handleSubmit = async (data) => {
     await dispatch(update({ id: id, data }));
-    await router.push('/characters/characters-list');
+    await router.push('/physicalttraits/physicalttraits-list');
   };
 
   return (
     <>
       <Head>
-        <title>{getPageTitle('Edit characters')}</title>
+        <title>{getPageTitle('Edit physicalttraits')}</title>
       </Head>
       <SectionMain>
         <SectionTitleLineWithButton
           icon={mdiChartTimelineVariant}
-          title={'Edit characters'}
+          title={'Edit physicalttraits'}
           main
         >
           {''}
@@ -104,75 +95,14 @@ const EditCharactersPage = () => {
             onSubmit={(values) => handleSubmit(values)}
           >
             <Form>
-              <FormField label='CharacterName'>
-                <Field name='name' placeholder='CharacterName' />
-              </FormField>
-
-              <FormField>
+              <FormField label='Style' labelFor='Style'>
                 <Field
-                  label='CharacterImage'
-                  color='info'
-                  icon={mdiUpload}
-                  path={'characters/image'}
-                  name='image'
-                  id='image'
-                  schema={{
-                    size: undefined,
-                    formats: undefined,
-                  }}
-                  component={FormImagePicker}
-                ></Field>
-              </FormField>
-
-              <FormField label='Creator' labelFor='creator'>
-                <Field
-                  name='creator'
-                  id='creator'
+                  name='Style'
+                  id='Style'
                   component={SelectField}
-                  options={initialValues.creator}
-                  itemRef={'users'}
-                  showField={'firstName'}
-                ></Field>
-              </FormField>
-
-              <FormField label='Traits' labelFor='traits'>
-                <Field
-                  name='traits'
-                  id='traits'
-                  component={SelectFieldMany}
-                  options={initialValues.traits}
-                  itemRef={'traits'}
-                  showField={'description'}
-                ></Field>
-              </FormField>
-
-              <FormField label='Scenarios' labelFor='scenarios'>
-                <Field
-                  name='scenarios'
-                  id='scenarios'
-                  component={SelectFieldMany}
-                  options={initialValues.scenarios}
-                  itemRef={'scenarios'}
-                  showField={'title'}
-                ></Field>
-              </FormField>
-
-              <FormField label='Versions' labelFor='versions'>
-                <Field
-                  name='versions'
-                  id='versions'
-                  component={SelectFieldMany}
-                  options={initialValues.versions}
-                  itemRef={'versions'}
-                  showField={'version_number'}
-                ></Field>
-              </FormField>
-
-              <FormField label='Description' hasTextareaHeight>
-                <Field
-                  name='Description'
-                  id='Description'
-                  component={RichTextField}
+                  options={initialValues.Style}
+                  itemRef={'styles'}
+                  showField={'id'}
                 ></Field>
               </FormField>
 
@@ -185,7 +115,9 @@ const EditCharactersPage = () => {
                   color='danger'
                   outline
                   label='Cancel'
-                  onClick={() => router.push('/characters/characters-list')}
+                  onClick={() =>
+                    router.push('/physicalttraits/physicalttraits-list')
+                  }
                 />
               </BaseButtons>
             </Form>
@@ -196,12 +128,12 @@ const EditCharactersPage = () => {
   );
 };
 
-EditCharactersPage.getLayout = function getLayout(page: ReactElement) {
+EditPhysicalttraitsPage.getLayout = function getLayout(page: ReactElement) {
   return (
-    <LayoutAuthenticated permission={'UPDATE_CHARACTERS'}>
+    <LayoutAuthenticated permission={'UPDATE_PHYSICALTTRAITS'}>
       {page}
     </LayoutAuthenticated>
   );
 };
 
-export default EditCharactersPage;
+export default EditPhysicalttraitsPage;

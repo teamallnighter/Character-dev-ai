@@ -2,175 +2,207 @@ import React, { useEffect, useState } from 'react';
 import type { ReactElement } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useAppSelector } from '../stores/hooks';
+import BaseButton from '../components/BaseButton';
+import CardBox from '../components/CardBox';
+import SectionFullScreen from '../components/SectionFullScreen';
 import LayoutGuest from '../layouts/Guest';
-import WebSiteHeader from '../components/WebPageComponents/Header';
-import WebSiteFooter from '../components/WebPageComponents/Footer';
-import {
-  HeroDesigns,
-  AboutUsDesigns,
-  FeaturesDesigns,
-  GalleryPortfolioDesigns,
-  ContactFormDesigns,
-} from '../components/WebPageComponents/designs';
+import BaseDivider from '../components/BaseDivider';
+import BaseButtons from '../components/BaseButtons';
+import { getPageTitle } from '../config';
+import { useAppSelector } from '../stores/hooks';
+import CardBoxComponentTitle from '../components/CardBoxComponentTitle';
+import { getPexelsImage, getPexelsVideo } from '../helpers/pexels';
 
-import HeroSection from '../components/WebPageComponents/HeroComponent';
+export default function Starter() {
+  const [illustrationImage, setIllustrationImage] = useState({
+    src: undefined,
+    photographer: undefined,
+    photographer_url: undefined,
+  });
+  const [illustrationVideo, setIllustrationVideo] = useState({
+    video_files: [],
+  });
+  const [contentType, setContentType] = useState('image');
+  const [contentPosition, setContentPosition] = useState('background');
+  const textColor = useAppSelector((state) => state.style.linkColor);
 
-import AboutUsSection from '../components/WebPageComponents/AboutUsComponent';
+  const title = 'Character dev ai';
 
-import FeaturesSection from '../components/WebPageComponents/FeaturesComponent';
-
-import GalleryPortfolioSection from '../components/WebPageComponents/GalleryPortfolioComponent';
-
-import { getMultiplePexelsImages } from '../helpers/pexels';
-
-import ContactFormSection from '../components/WebPageComponents/ContactFormComponent';
-
-export default function WebSite() {
-  const cardsStyle = useAppSelector((state) => state.style.cardsStyle);
-  const bgColor = useAppSelector((state) => state.style.bgLayoutColor);
-  const projectName = 'Character dev ai';
-
+  // Fetch Pexels image/video
   useEffect(() => {
-    const darkElement = document.querySelector('body .dark');
-    if (darkElement) {
-      darkElement.classList.remove('dark');
+    async function fetchData() {
+      const image = await getPexelsImage();
+      const video = await getPexelsVideo();
+      setIllustrationImage(image);
+      setIllustrationVideo(video);
     }
+    fetchData();
   }, []);
-  const pages = [
-    {
-      href: '/about',
-      label: 'about',
-    },
 
-    {
-      href: '/contact',
-      label: 'contact',
-    },
+  const imageBlock = (image) => (
+    <div
+      className='hidden md:flex flex-col justify-end relative flex-grow-0 flex-shrink-0 w-1/3'
+      style={{
+        backgroundImage: `${
+          image
+            ? `url(${image?.src?.original})`
+            : 'linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5))'
+        }`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'left center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      <div className='flex justify-center w-full bg-blue-300/20'>
+        <a
+          className='text-[8px]'
+          href={image?.photographer_url}
+          target='_blank'
+          rel='noreferrer'
+        >
+          Photo by {image?.photographer} on Pexels
+        </a>
+      </div>
+    </div>
+  );
 
-    {
-      href: '/home',
-      label: 'home',
-    },
-
-    {
-      href: '/portfolio_gallery',
-      label: 'portfolio_gallery',
-    },
-
-    {
-      href: '/faq',
-      label: 'FAQ',
-    },
-  ];
-
-  const features_points = [
-    {
-      name: 'Dynamic Personality Builder',
-      description:
-        'Craft unique personalities for your AI characters with our dynamic builder. Customize traits and attributes to ensure your characters are truly one-of-a-kind.',
-      icon: 'mdiAccountCircle',
-    },
-    {
-      name: 'Advanced Scenario Simulation',
-      description:
-        'Test your characters in various scenarios to see how they react and adapt. This feature helps refine interactions and improve character depth.',
-      icon: 'mdiPlayCircleOutline',
-    },
-    {
-      name: 'Comprehensive Version Control',
-      description:
-        "Keep track of your character's evolution with our comprehensive version control system. Easily revert to previous versions or explore new development paths.",
-      icon: 'mdiHistory',
-    },
-  ];
-
-  const [images, setImages] = useState([]);
-  const pexelsQueriesWebSite = [
-    'Team collaborating on AI design',
-    'Developers brainstorming character features',
-    'Creative process in action',
-    'AI character sketches and concepts',
-    'Innovative technology in use',
-    'User interface design session',
-  ];
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const images = await getMultiplePexelsImages(pexelsQueriesWebSite);
-        const formattedImages = (images || []).map((image) => ({
-          src: image?.src || undefined,
-          photographer: image?.photographer || undefined,
-          photographer_url: image?.photographer_url || undefined,
-        }));
-        setImages(formattedImages);
-      } catch (error) {
-        console.error('Error fetching images:', error);
-      }
-    };
-
-    fetchImages();
-  }, []);
+  const videoBlock = (video) => {
+    if (video?.video_files?.length > 0) {
+      return (
+        <div className='hidden md:flex flex-col justify-end relative flex-grow-0 flex-shrink-0 w-1/3'>
+          <video
+            className='absolute top-0 left-0 w-full h-full object-cover'
+            autoPlay
+            loop
+            muted
+          >
+            <source src={video?.video_files[0]?.link} type='video/mp4' />
+            Your browser does not support the video tag.
+          </video>
+          <div className='flex justify-center w-full bg-blue-300/20 z-10'>
+            <a
+              className='text-[8px]'
+              href={video?.user?.url}
+              target='_blank'
+              rel='noreferrer'
+            >
+              Video by {video.user.name} on Pexels
+            </a>
+          </div>
+        </div>
+      );
+    }
+  };
 
   return (
-    <div className='flex flex-col min-h-screen'>
+    <div
+      style={
+        contentPosition === 'background'
+          ? {
+              backgroundImage: `${
+                illustrationImage
+                  ? `url(${illustrationImage.src?.original})`
+                  : 'linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5))'
+              }`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'left center',
+              backgroundRepeat: 'no-repeat',
+            }
+          : {}
+      }
+    >
       <Head>
-        <title>{`About Us - Discover ${projectName}`}</title>
-        <meta
-          name='description'
-          content={`Learn more about ${projectName}, our mission, values, and the innovative features that empower creators to develop unique AI characters.`}
-        />
+        <title>{getPageTitle('Starter Page')}</title>
       </Head>
-      <WebSiteHeader projectName={'Character dev ai'} pages={pages} />
-      <main className={`flex-grow    bg-white  rounded-none  `}>
-        <HeroSection
-          projectName={'Character dev ai'}
-          image={['Team collaborating on project']}
-          mainText={`Explore the Vision Behind ${projectName}`}
-          subTitle={`Discover the mission and values that drive ${projectName}. Learn how we empower creators to bring their AI characters to life with innovative tools and features.`}
-          design={HeroDesigns.IMAGE_BG || ''}
-          buttonText={`Our Story`}
-        />
 
-        <AboutUsSection
-          projectName={'Character dev ai'}
-          image={['Creative team brainstorming session']}
-          mainText={`The Heart of ${projectName}`}
-          subTitle={`At ${projectName}, we are passionate about empowering creators with cutting-edge tools to develop AI characters. Our team is dedicated to innovation and excellence, ensuring a seamless experience for all users.`}
-          design={AboutUsDesigns.IMAGE_LEFT || ''}
-          buttonText={`Meet Our Team`}
-        />
+      <SectionFullScreen bg='violet'>
+        <div
+          className={`flex ${
+            contentPosition === 'right' ? 'flex-row-reverse' : 'flex-row'
+          } min-h-screen w-full`}
+        >
+          {contentType === 'image' && contentPosition !== 'background'
+            ? imageBlock(illustrationImage)
+            : null}
+          {contentType === 'video' && contentPosition !== 'background'
+            ? videoBlock(illustrationVideo)
+            : null}
+          <div className='flex items-center justify-center flex-col space-y-4 w-full lg:w-full'>
+            <CardBox className='w-full md:w-3/5 lg:w-2/3'>
+              <CardBoxComponentTitle title='Welcome to your Character dev ai app!' />
 
-        <FeaturesSection
-          projectName={'Character dev ai'}
-          image={['Innovative AI features illustration']}
-          withBg={1}
-          features={features_points}
-          mainText={`Innovative Features of ${projectName}`}
-          subTitle={`Explore the powerful features that make ${projectName} the ultimate tool for AI character development. Enhance your creative process with these innovative solutions.`}
-          design={FeaturesDesigns.CARDS_GRID_WITH_ICONS_DIVERSITY || ''}
-        />
+              <div className='space-y-3'>
+                <p className='text-center text-gray-500'>
+                  This is a React.js/Node.js app generated by the{' '}
+                  <a
+                    className={`${textColor}`}
+                    href='https://flatlogic.com/generator'
+                  >
+                    Flatlogic Web App Generator
+                  </a>
+                </p>
+                <p className='text-center text-gray-500'>
+                  For guides and documentation please check your local README.md
+                  and the{' '}
+                  <a
+                    className={`${textColor}`}
+                    href='https://flatlogic.com/documentation'
+                  >
+                    Flatlogic documentation
+                  </a>
+                </p>
+              </div>
 
-        <GalleryPortfolioSection
-          projectName={'Character dev ai'}
-          images={images}
-          mainText={`Visual Journey of ${projectName}`}
-          design={GalleryPortfolioDesigns.HORIZONTAL_WITH_BUTTONS || ''}
-        />
+              <BaseButtons>
+                <BaseButton
+                  href='/login'
+                  label='Login'
+                  color='info'
+                  className='w-full'
+                />
+              </BaseButtons>
+              <div className='grid grid-cols-1 gap-2 lg:grid-cols-4 mt-2'>
+                <div className='text-center'>
+                  <a className={`${textColor}`} href='https://react.dev/'>
+                    React.js
+                  </a>
+                </div>
 
-        <ContactFormSection
-          projectName={'Character dev ai'}
-          design={ContactFormDesigns.WITH_IMAGE || ''}
-          image={['Person typing on laptop']}
-          mainText={`Get in Touch with ${projectName} `}
-          subTitle={`We'd love to hear from you! Reach out to us with any questions or feedback, and our team will respond promptly.`}
-        />
-      </main>
-      <WebSiteFooter projectName={'Character dev ai'} pages={pages} />
+                <div className='text-center'>
+                  <a className={`${textColor}`} href='https://tailwindcss.com/'>
+                    Tailwind CSS
+                  </a>
+                </div>
+                <div className='text-center'>
+                  <a className={`${textColor}`} href='https://nodejs.org/en'>
+                    Node.js
+                  </a>
+                </div>
+                <div className='text-center'>
+                  <a
+                    className={`${textColor}`}
+                    href='https://flatlogic.com/forum'
+                  >
+                    Flatlogic Forum
+                  </a>
+                </div>
+              </div>
+            </CardBox>
+          </div>
+        </div>
+      </SectionFullScreen>
+      <div className='bg-black text-white flex flex-col text-center justify-center md:flex-row'>
+        <p className='py-6 text-sm'>
+          © 2024 <span>{title}</span>. All rights reserved
+        </p>
+        <Link className='py-6 ml-4 text-sm' href='/privacy-policy/'>
+          Privacy Policy
+        </Link>
+      </div>
     </div>
   );
 }
 
-WebSite.getLayout = function getLayout(page: ReactElement) {
+Starter.getLayout = function getLayout(page: ReactElement) {
   return <LayoutGuest>{page}</LayoutGuest>;
 };

@@ -1,7 +1,7 @@
 const express = require('express');
 
-const CharactersService = require('../services/characters');
-const CharactersDBApi = require('../db/api/characters');
+const StylesService = require('../services/styles');
+const StylesDBApi = require('../db/api/styles');
 const wrapAsync = require('../helpers').wrapAsync;
 
 const router = express.Router();
@@ -10,19 +10,19 @@ const { parse } = require('json2csv');
 
 const { checkCrudPermissions } = require('../middlewares/check-permissions');
 
-router.use(checkCrudPermissions('characters'));
+router.use(checkCrudPermissions('styles'));
 
 /**
  *  @swagger
  *  components:
  *    schemas:
- *      Characters:
+ *      Styles:
  *        type: object
  *        properties:
 
- *          name:
+ *          Name:
  *            type: string
- *            default: name
+ *            default: Name
  *          Description:
  *            type: string
  *            default: Description
@@ -32,17 +32,17 @@ router.use(checkCrudPermissions('characters'));
 /**
  *  @swagger
  * tags:
- *   name: Characters
- *   description: The Characters managing API
+ *   name: Styles
+ *   description: The Styles managing API
  */
 
 /**
  *  @swagger
- *  /api/characters:
+ *  /api/styles:
  *    post:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
+ *      tags: [Styles]
  *      summary: Add new item
  *      description: Add new item
  *      requestBody:
@@ -54,14 +54,14 @@ router.use(checkCrudPermissions('characters'));
  *                data:
  *                  description: Data of the updated item
  *                  type: object
- *                  $ref: "#/components/schemas/Characters"
+ *                  $ref: "#/components/schemas/Styles"
  *      responses:
  *        200:
  *          description: The item was successfully added
  *          content:
  *            application/json:
  *              schema:
- *                $ref: "#/components/schemas/Characters"
+ *                $ref: "#/components/schemas/Styles"
  *        401:
  *          $ref: "#/components/responses/UnauthorizedError"
  *        405:
@@ -76,12 +76,7 @@ router.post(
       req.headers.referer ||
       `${req.protocol}://${req.hostname}${req.originalUrl}`;
     const link = new URL(referer);
-    await CharactersService.create(
-      req.body.data,
-      req.currentUser,
-      true,
-      link.host,
-    );
+    await StylesService.create(req.body.data, req.currentUser, true, link.host);
     const payload = true;
     res.status(200).send(payload);
   }),
@@ -93,7 +88,7 @@ router.post(
  *  post:
  *    security:
  *      - bearerAuth: []
- *    tags: [Characters]
+ *    tags: [Styles]
  *    summary: Bulk import items
  *    description: Bulk import items
  *    requestBody:
@@ -106,14 +101,14 @@ router.post(
  *              description: Data of the updated items
  *              type: array
  *              items:
- *                $ref: "#/components/schemas/Characters"
+ *                $ref: "#/components/schemas/Styles"
  *    responses:
  *      200:
  *        description: The items were successfully imported
  *    content:
  *      application/json:
  *        schema:
- *          $ref: "#/components/schemas/Characters"
+ *          $ref: "#/components/schemas/Styles"
  *      401:
  *        $ref: "#/components/responses/UnauthorizedError"
  *      405:
@@ -129,7 +124,7 @@ router.post(
       req.headers.referer ||
       `${req.protocol}://${req.hostname}${req.originalUrl}`;
     const link = new URL(referer);
-    await CharactersService.bulkImport(req, res, true, link.host);
+    await StylesService.bulkImport(req, res, true, link.host);
     const payload = true;
     res.status(200).send(payload);
   }),
@@ -137,11 +132,11 @@ router.post(
 
 /**
  *  @swagger
- *  /api/characters/{id}:
+ *  /api/styles/{id}:
  *    put:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
+ *      tags: [Styles]
  *      summary: Update the data of the selected item
  *      description: Update the data of the selected item
  *      parameters:
@@ -164,7 +159,7 @@ router.post(
  *                data:
  *                  description: Data of the updated item
  *                  type: object
- *                  $ref: "#/components/schemas/Characters"
+ *                  $ref: "#/components/schemas/Styles"
  *              required:
  *                - id
  *      responses:
@@ -173,7 +168,7 @@ router.post(
  *          content:
  *            application/json:
  *              schema:
- *                $ref: "#/components/schemas/Characters"
+ *                $ref: "#/components/schemas/Styles"
  *        400:
  *          description: Invalid ID supplied
  *        401:
@@ -186,7 +181,7 @@ router.post(
 router.put(
   '/:id',
   wrapAsync(async (req, res) => {
-    await CharactersService.update(req.body.data, req.body.id, req.currentUser);
+    await StylesService.update(req.body.data, req.body.id, req.currentUser);
     const payload = true;
     res.status(200).send(payload);
   }),
@@ -194,11 +189,11 @@ router.put(
 
 /**
  * @swagger
- *  /api/characters/{id}:
+ *  /api/styles/{id}:
  *    delete:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
+ *      tags: [Styles]
  *      summary: Delete the selected item
  *      description: Delete the selected item
  *      parameters:
@@ -214,7 +209,7 @@ router.put(
  *          content:
  *            application/json:
  *              schema:
- *                $ref: "#/components/schemas/Characters"
+ *                $ref: "#/components/schemas/Styles"
  *        400:
  *          description: Invalid ID supplied
  *        401:
@@ -227,7 +222,7 @@ router.put(
 router.delete(
   '/:id',
   wrapAsync(async (req, res) => {
-    await CharactersService.remove(req.params.id, req.currentUser);
+    await StylesService.remove(req.params.id, req.currentUser);
     const payload = true;
     res.status(200).send(payload);
   }),
@@ -235,11 +230,11 @@ router.delete(
 
 /**
  *  @swagger
- *  /api/characters/deleteByIds:
+ *  /api/styles/deleteByIds:
  *    post:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
+ *      tags: [Styles]
  *      summary: Delete the selected item list
  *      description: Delete the selected item list
  *      requestBody:
@@ -257,7 +252,7 @@ router.delete(
  *          content:
  *            application/json:
  *              schema:
- *                $ref: "#/components/schemas/Characters"
+ *                $ref: "#/components/schemas/Styles"
  *        401:
  *          $ref: "#/components/responses/UnauthorizedError"
  *        404:
@@ -268,7 +263,7 @@ router.delete(
 router.post(
   '/deleteByIds',
   wrapAsync(async (req, res) => {
-    await CharactersService.deleteByIds(req.body.data, req.currentUser);
+    await StylesService.deleteByIds(req.body.data, req.currentUser);
     const payload = true;
     res.status(200).send(payload);
   }),
@@ -276,22 +271,22 @@ router.post(
 
 /**
  *  @swagger
- *  /api/characters:
+ *  /api/styles:
  *    get:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
- *      summary: Get all characters
- *      description: Get all characters
+ *      tags: [Styles]
+ *      summary: Get all styles
+ *      description: Get all styles
  *      responses:
  *        200:
- *          description: Characters list successfully received
+ *          description: Styles list successfully received
  *          content:
  *            application/json:
  *              schema:
  *                type: array
  *                items:
- *                  $ref: "#/components/schemas/Characters"
+ *                  $ref: "#/components/schemas/Styles"
  *        401:
  *          $ref: "#/components/responses/UnauthorizedError"
  *        404:
@@ -304,9 +299,9 @@ router.get(
   wrapAsync(async (req, res) => {
     const filetype = req.query.filetype;
 
-    const payload = await CharactersDBApi.findAll(req.query);
+    const payload = await StylesDBApi.findAll(req.query);
     if (filetype && filetype === 'csv') {
-      const fields = ['id', 'name', 'Description'];
+      const fields = ['id', 'Name', 'Description'];
       const opts = { fields };
       try {
         const csv = parse(payload.rows, opts);
@@ -323,22 +318,22 @@ router.get(
 
 /**
  *  @swagger
- *  /api/characters/count:
+ *  /api/styles/count:
  *    get:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
- *      summary: Count all characters
- *      description: Count all characters
+ *      tags: [Styles]
+ *      summary: Count all styles
+ *      description: Count all styles
  *      responses:
  *        200:
- *          description: Characters count successfully received
+ *          description: Styles count successfully received
  *          content:
  *            application/json:
  *              schema:
  *                type: array
  *                items:
- *                  $ref: "#/components/schemas/Characters"
+ *                  $ref: "#/components/schemas/Styles"
  *        401:
  *          $ref: "#/components/responses/UnauthorizedError"
  *        404:
@@ -349,7 +344,7 @@ router.get(
 router.get(
   '/count',
   wrapAsync(async (req, res) => {
-    const payload = await CharactersDBApi.findAll(
+    const payload = await StylesDBApi.findAll(
       req.query,
 
       { countOnly: true },
@@ -361,22 +356,22 @@ router.get(
 
 /**
  *  @swagger
- *  /api/characters/autocomplete:
+ *  /api/styles/autocomplete:
  *    get:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
- *      summary: Find all characters that match search criteria
- *      description: Find all characters that match search criteria
+ *      tags: [Styles]
+ *      summary: Find all styles that match search criteria
+ *      description: Find all styles that match search criteria
  *      responses:
  *        200:
- *          description: Characters list successfully received
+ *          description: Styles list successfully received
  *          content:
  *            application/json:
  *              schema:
  *                type: array
  *                items:
- *                  $ref: "#/components/schemas/Characters"
+ *                  $ref: "#/components/schemas/Styles"
  *        401:
  *          $ref: "#/components/responses/UnauthorizedError"
  *        404:
@@ -385,7 +380,7 @@ router.get(
  *          description: Some server error
  */
 router.get('/autocomplete', async (req, res) => {
-  const payload = await CharactersDBApi.findAllAutocomplete(
+  const payload = await StylesDBApi.findAllAutocomplete(
     req.query.query,
     req.query.limit,
   );
@@ -395,11 +390,11 @@ router.get('/autocomplete', async (req, res) => {
 
 /**
  * @swagger
- *  /api/characters/{id}:
+ *  /api/styles/{id}:
  *    get:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
+ *      tags: [Styles]
  *      summary: Get selected item
  *      description: Get selected item
  *      parameters:
@@ -415,7 +410,7 @@ router.get('/autocomplete', async (req, res) => {
  *          content:
  *            application/json:
  *              schema:
- *                $ref: "#/components/schemas/Characters"
+ *                $ref: "#/components/schemas/Styles"
  *        400:
  *          description: Invalid ID supplied
  *        401:
@@ -428,7 +423,7 @@ router.get('/autocomplete', async (req, res) => {
 router.get(
   '/:id',
   wrapAsync(async (req, res) => {
-    const payload = await CharactersDBApi.findBy({ id: req.params.id });
+    const payload = await StylesDBApi.findBy({ id: req.params.id });
 
     res.status(200).send(payload);
   }),

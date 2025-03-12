@@ -13,7 +13,7 @@ interface Hint {
   hintPosition?: string;
 }
 
-export const landingSteps: Step[] = [
+export const loginSteps: Step[] = [
   {
     element: '#elementId1',
     intro: `
@@ -25,23 +25,6 @@ export const landingSteps: Step[] = [
     position: 'auto',
     tooltipClass: ' good-img',
   },
-  {
-    element: '#websiteHeader',
-    intro:
-      "You can switch between different sections of the app using this header. It's your gateway to exploring all the available pages.",
-    position: 'auto',
-    tooltipClass: ' right-0 mx-auto rounded shadow-lg',
-    disableInteraction: true,
-  },
-  {
-    element: '#loginButton',
-    intro:
-      'Decide whether to explore the landing page or proceed to the login. You can always return to the landing page later.',
-    disableInteraction: true,
-  },
-];
-
-export const loginSteps: Step[] = [
   {
     element: '#loginRoles',
     intro:
@@ -94,7 +77,7 @@ export const appSteps: Step[] = [
   {
     element: '#asideMenu',
     intro:
-      'Access various entities and manage your data. Find links to  the landing page and  Swagger API documentation for more information.',
+      'Access various entities and manage your data. Find links to  Swagger API documentation for more information.',
     position: 'auto',
     disableInteraction: true,
   },

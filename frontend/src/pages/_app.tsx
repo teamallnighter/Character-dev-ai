@@ -13,7 +13,6 @@ import 'intro.js/introjs.css';
 import IntroGuide from '../components/IntroGuide';
 import {
   appSteps,
-  landingSteps,
   loginSteps,
   usersSteps,
   rolesSteps,
@@ -73,10 +72,6 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     if (router.pathname === '/login' && !isCompleted('loginSteps')) {
       setSteps(loginSteps);
       setStepName('loginSteps');
-      setStepsEnabled(true);
-    } else if (router.pathname === '/' && !isCompleted('landingSteps')) {
-      setSteps(landingSteps);
-      setStepName('landingSteps');
       setStepsEnabled(true);
     } else if (router.pathname === '/dashboard' && !isCompleted('appSteps')) {
       setTimeout(() => {

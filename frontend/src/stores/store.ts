@@ -11,6 +11,8 @@ import traitsSlice from './traits/traitsSlice';
 import versionsSlice from './versions/versionsSlice';
 import rolesSlice from './roles/rolesSlice';
 import permissionsSlice from './permissions/permissionsSlice';
+import physicalttraitsSlice from './physicalttraits/physicalttraitsSlice';
+import stylesSlice from './styles/stylesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -26,6 +28,8 @@ export const store = configureStore({
     versions: versionsSlice,
     roles: rolesSlice,
     permissions: permissionsSlice,
+    physicalttraits: physicalttraitsSlice,
+    styles: stylesSlice,
   },
 });
 

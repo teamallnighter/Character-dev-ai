@@ -7,18 +7,18 @@ import LayoutAuthenticated from '../../layouts/Authenticated';
 import SectionMain from '../../components/SectionMain';
 import SectionTitleLineWithButton from '../../components/SectionTitleLineWithButton';
 import { getPageTitle } from '../../config';
-import TableCharacters from '../../components/Characters/TableCharacters';
+import TableStyles from '../../components/Styles/TableStyles';
 import BaseButton from '../../components/BaseButton';
 import axios from 'axios';
 import Link from 'next/link';
 import { useAppDispatch, useAppSelector } from '../../stores/hooks';
 import CardBoxModal from '../../components/CardBoxModal';
 import DragDropFilePicker from '../../components/DragDropFilePicker';
-import { setRefetch, uploadCsv } from '../../stores/characters/charactersSlice';
+import { setRefetch, uploadCsv } from '../../stores/styles/stylesSlice';
 
 import { hasPermission } from '../../helpers/userPermissions';
 
-const CharactersTablesPage = () => {
+const StylesTablesPage = () => {
   const [filterItems, setFilterItems] = useState([]);
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [isModalActive, setIsModalActive] = useState(false);
@@ -29,14 +29,12 @@ const CharactersTablesPage = () => {
   const dispatch = useAppDispatch();
 
   const [filters] = useState([
-    { label: 'CharacterName', title: 'name' },
+    { label: 'Name', title: 'Name' },
     { label: 'Description', title: 'Description' },
-
-    { label: 'Creator', title: 'creator' },
   ]);
 
   const hasCreatePermission =
-    currentUser && hasPermission(currentUser, 'CREATE_CHARACTERS');
+    currentUser && hasPermission(currentUser, 'CREATE_STYLES');
 
   const addFilter = () => {
     const newItem = {
@@ -52,9 +50,9 @@ const CharactersTablesPage = () => {
     setFilterItems([...filterItems, newItem]);
   };
 
-  const getCharactersCSV = async () => {
+  const getStylesCSV = async () => {
     const response = await axios({
-      url: '/characters?filetype=csv',
+      url: '/styles?filetype=csv',
       method: 'GET',
       responseType: 'blob',
     });
@@ -62,7 +60,7 @@ const CharactersTablesPage = () => {
     const blob = new Blob([response.data], { type: type });
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    link.download = 'charactersCSV.csv';
+    link.download = 'stylesCSV.csv';
     link.click();
   };
 
@@ -82,12 +80,12 @@ const CharactersTablesPage = () => {
   return (
     <>
       <Head>
-        <title>{getPageTitle('Characters')}</title>
+        <title>{getPageTitle('Styles')}</title>
       </Head>
       <SectionMain>
         <SectionTitleLineWithButton
           icon={mdiChartTimelineVariant}
-          title='Characters'
+          title='Styles'
           main
         >
           {''}
@@ -96,7 +94,7 @@ const CharactersTablesPage = () => {
           {hasCreatePermission && (
             <BaseButton
               className={'mr-3'}
-              href={'/characters/characters-new'}
+              href={'/styles/styles-new'}
               color='info'
               label='New Item'
             />
@@ -112,7 +110,7 @@ const CharactersTablesPage = () => {
             className={'mr-3'}
             color='info'
             label='Download CSV'
-            onClick={getCharactersCSV}
+            onClick={getStylesCSV}
           />
 
           {hasCreatePermission && (
@@ -126,13 +124,9 @@ const CharactersTablesPage = () => {
           <div className='md:inline-flex items-center ms-auto'>
             <div id='delete-rows-button'></div>
           </div>
-
-          <div className='md:inline-flex items-center ms-auto'>
-            <Link href={'/characters/characters-table'}>Switch to Table</Link>
-          </div>
         </CardBox>
         <CardBox className='mb-6' hasTable>
-          <TableCharacters
+          <TableStyles
             filterItems={filterItems}
             setFilterItems={setFilterItems}
             filters={filters}
@@ -159,12 +153,10 @@ const CharactersTablesPage = () => {
   );
 };
 
-CharactersTablesPage.getLayout = function getLayout(page: ReactElement) {
+StylesTablesPage.getLayout = function getLayout(page: ReactElement) {
   return (
-    <LayoutAuthenticated permission={'READ_CHARACTERS'}>
-      {page}
-    </LayoutAuthenticated>
+    <LayoutAuthenticated permission={'READ_STYLES'}>{page}</LayoutAuthenticated>
   );
 };
 
-export default CharactersTablesPage;
+export default StylesTablesPage;

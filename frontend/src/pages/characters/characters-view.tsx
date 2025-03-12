@@ -192,6 +192,15 @@ const CharactersView = () => {
             </CardBox>
           </>
 
+          <div className={'mb-4'}>
+            <p className={'block font-bold mb-2'}>Description</p>
+            {characters.Description ? (
+              <p dangerouslySetInnerHTML={{ __html: characters.Description }} />
+            ) : (
+              <p>No data</p>
+            )}
+          </div>
+
           <>
             <p className={'block font-bold mb-2'}>Versions Character</p>
             <CardBox

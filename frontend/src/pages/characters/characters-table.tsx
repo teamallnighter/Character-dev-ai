@@ -30,6 +30,7 @@ const CharactersTablesPage = () => {
 
   const [filters] = useState([
     { label: 'CharacterName', title: 'name' },
+    { label: 'Description', title: 'Description' },
 
     { label: 'Creator', title: 'creator' },
   ]);

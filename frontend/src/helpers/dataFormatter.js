@@ -171,4 +171,23 @@ export default {
     if (!val) return '';
     return { label: val.name, id: val.id };
   },
+
+  stylesManyListFormatter(val) {
+    if (!val || !val.length) return [];
+    return val.map((item) => item.id);
+  },
+  stylesOneListFormatter(val) {
+    if (!val) return '';
+    return val.id;
+  },
+  stylesManyListFormatterEdit(val) {
+    if (!val || !val.length) return [];
+    return val.map((item) => {
+      return { id: item.id, label: item.id };
+    });
+  },
+  stylesOneListFormatterEdit(val) {
+    if (!val) return '';
+    return { label: val.id, id: val.id };
+  },
 };

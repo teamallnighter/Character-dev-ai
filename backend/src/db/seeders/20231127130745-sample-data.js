@@ -9,6 +9,10 @@ const Traits = db.traits;
 
 const Versions = db.versions;
 
+const Physicalttraits = db.physicalttraits;
+
+const Styles = db.styles;
+
 const CharactersData = [
   {
     name: 'Ava the Adventurer',
@@ -22,6 +26,8 @@ const CharactersData = [
     // type code here for "relation_many" field
 
     // type code here for "relation_many" field
+
+    Description: 'Antoine Laurent Lavoisier',
   },
 
   {
@@ -36,6 +42,8 @@ const CharactersData = [
     // type code here for "relation_many" field
 
     // type code here for "relation_many" field
+
+    Description: 'Werner Heisenberg',
   },
 
   {
@@ -50,6 +58,40 @@ const CharactersData = [
     // type code here for "relation_many" field
 
     // type code here for "relation_many" field
+
+    Description: 'Max Delbruck',
+  },
+
+  {
+    name: 'Mia the Scientist',
+
+    // type code here for "images" field
+
+    // type code here for "relation_one" field
+
+    // type code here for "relation_many" field
+
+    // type code here for "relation_many" field
+
+    // type code here for "relation_many" field
+
+    Description: 'Frederick Gowland Hopkins',
+  },
+
+  {
+    name: 'Noah the Explorer',
+
+    // type code here for "images" field
+
+    // type code here for "relation_one" field
+
+    // type code here for "relation_many" field
+
+    // type code here for "relation_many" field
+
+    // type code here for "relation_many" field
+
+    Description: 'Alfred Binet',
   },
 ];
 
@@ -72,6 +114,18 @@ const ScenariosData = [
 
     content: 'Leo examines the crime scene for clues to solve the mystery.',
   },
+
+  {
+    title: 'Lab Experiment',
+
+    content: 'Mia conducts a groundbreaking experiment in her lab.',
+  },
+
+  {
+    title: 'Desert Trek',
+
+    content: 'Noah embarks on a journey across the vast desert.',
+  },
 ];
 
 const TraitsData = [
@@ -85,6 +139,14 @@ const TraitsData = [
 
   {
     description: 'Wise',
+  },
+
+  {
+    description: 'Mysterious',
+  },
+
+  {
+    description: 'Observant',
   },
 ];
 
@@ -111,6 +173,76 @@ const VersionsData = [
     created_on: new Date('2023-10-02T09:00:00Z'),
 
     // type code here for "relation_one" field
+  },
+
+  {
+    version_number: 'V1.2',
+
+    created_on: new Date('2023-10-10T14:00:00Z'),
+
+    // type code here for "relation_one" field
+  },
+
+  {
+    version_number: 'V1.0',
+
+    created_on: new Date('2023-10-03T11:00:00Z'),
+
+    // type code here for "relation_one" field
+  },
+];
+
+const PhysicalttraitsData = [
+  {
+    // type code here for "relation_one" field
+  },
+
+  {
+    // type code here for "relation_one" field
+  },
+
+  {
+    // type code here for "relation_one" field
+  },
+
+  {
+    // type code here for "relation_one" field
+  },
+
+  {
+    // type code here for "relation_one" field
+  },
+];
+
+const StylesData = [
+  {
+    Name: 'Louis Victor de Broglie',
+
+    Description: 'Michael Faraday',
+  },
+
+  {
+    Name: 'Lynn Margulis',
+
+    Description: 'Albert Einstein',
+  },
+
+  {
+    Name: 'Trofim Lysenko',
+
+    Description: 'Gustav Kirchhoff',
+  },
+
+  {
+    Name: 'Justus Liebig',
+
+    Description: 'Edward O. Wilson',
+  },
+
+  {
+    Name: 'Comte de Buffon',
+
+    Description: 'Charles Darwin',
   },
 ];
 
@@ -148,6 +280,28 @@ async function associateCharacterWithCreator() {
   });
   if (Character2?.setCreator) {
     await Character2.setCreator(relatedCreator2);
+  }
+
+  const relatedCreator3 = await Users.findOne({
+    offset: Math.floor(Math.random() * (await Users.count())),
+  });
+  const Character3 = await Characters.findOne({
+    order: [['id', 'ASC']],
+    offset: 3,
+  });
+  if (Character3?.setCreator) {
+    await Character3.setCreator(relatedCreator3);
+  }
+
+  const relatedCreator4 = await Users.findOne({
+    offset: Math.floor(Math.random() * (await Users.count())),
+  });
+  const Character4 = await Characters.findOne({
+    order: [['id', 'ASC']],
+    offset: 4,
+  });
+  if (Character4?.setCreator) {
+    await Character4.setCreator(relatedCreator4);
   }
 }
 
@@ -190,6 +344,85 @@ async function associateVersionWithCharacter() {
   if (Version2?.setCharacter) {
     await Version2.setCharacter(relatedCharacter2);
   }
+
+  const relatedCharacter3 = await Characters.findOne({
+    offset: Math.floor(Math.random() * (await Characters.count())),
+  });
+  const Version3 = await Versions.findOne({
+    order: [['id', 'ASC']],
+    offset: 3,
+  });
+  if (Version3?.setCharacter) {
+    await Version3.setCharacter(relatedCharacter3);
+  }
+
+  const relatedCharacter4 = await Characters.findOne({
+    offset: Math.floor(Math.random() * (await Characters.count())),
+  });
+  const Version4 = await Versions.findOne({
+    order: [['id', 'ASC']],
+    offset: 4,
+  });
+  if (Version4?.setCharacter) {
+    await Version4.setCharacter(relatedCharacter4);
+  }
+}
+
+async function associatePhysicalttraitWithStyle() {
+  const relatedStyle0 = await Styles.findOne({
+    offset: Math.floor(Math.random() * (await Styles.count())),
+  });
+  const Physicalttrait0 = await Physicalttraits.findOne({
+    order: [['id', 'ASC']],
+    offset: 0,
+  });
+  if (Physicalttrait0?.setStyle) {
+    await Physicalttrait0.setStyle(relatedStyle0);
+  }
+
+  const relatedStyle1 = await Styles.findOne({
+    offset: Math.floor(Math.random() * (await Styles.count())),
+  });
+  const Physicalttrait1 = await Physicalttraits.findOne({
+    order: [['id', 'ASC']],
+    offset: 1,
+  });
+  if (Physicalttrait1?.setStyle) {
+    await Physicalttrait1.setStyle(relatedStyle1);
+  }
+
+  const relatedStyle2 = await Styles.findOne({
+    offset: Math.floor(Math.random() * (await Styles.count())),
+  });
+  const Physicalttrait2 = await Physicalttraits.findOne({
+    order: [['id', 'ASC']],
+    offset: 2,
+  });
+  if (Physicalttrait2?.setStyle) {
+    await Physicalttrait2.setStyle(relatedStyle2);
+  }
+
+  const relatedStyle3 = await Styles.findOne({
+    offset: Math.floor(Math.random() * (await Styles.count())),
+  });
+  const Physicalttrait3 = await Physicalttraits.findOne({
+    order: [['id', 'ASC']],
+    offset: 3,
+  });
+  if (Physicalttrait3?.setStyle) {
+    await Physicalttrait3.setStyle(relatedStyle3);
+  }
+
+  const relatedStyle4 = await Styles.findOne({
+    offset: Math.floor(Math.random() * (await Styles.count())),
+  });
+  const Physicalttrait4 = await Physicalttraits.findOne({
+    order: [['id', 'ASC']],
+    offset: 4,
+  });
+  if (Physicalttrait4?.setStyle) {
+    await Physicalttrait4.setStyle(relatedStyle4);
+  }
 }
 
 module.exports = {
@@ -201,6 +434,10 @@ module.exports = {
     await Traits.bulkCreate(TraitsData);
 
     await Versions.bulkCreate(VersionsData);
+
+    await Physicalttraits.bulkCreate(PhysicalttraitsData);
+
+    await Styles.bulkCreate(StylesData);
 
     await Promise.all([
       // Similar logic for "relation_many"
@@ -214,6 +451,8 @@ module.exports = {
       // Similar logic for "relation_many"
 
       await associateVersionWithCharacter(),
+
+      await associatePhysicalttraitWithStyle(),
     ]);
   },
 
@@ -225,5 +464,9 @@ module.exports = {
     await queryInterface.bulkDelete('traits', null, {});
 
     await queryInterface.bulkDelete('versions', null, {});
+
+    await queryInterface.bulkDelete('physicalttraits', null, {});
+
+    await queryInterface.bulkDelete('styles', null, {});
   },
 };

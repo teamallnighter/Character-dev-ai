@@ -18,8 +18,6 @@ const pexelsRoutes = require('./routes/pexels');
 
 const openaiRoutes = require('./routes/openai');
 
-const contactFormRoutes = require('./routes/contactForm');
-
 const usersRoutes = require('./routes/users');
 
 const charactersRoutes = require('./routes/characters');
@@ -33,6 +31,10 @@ const versionsRoutes = require('./routes/versions');
 const rolesRoutes = require('./routes/roles');
 
 const permissionsRoutes = require('./routes/permissions');
+
+const physicalttraitsRoutes = require('./routes/physicalttraits');
+
+const stylesRoutes = require('./routes/styles');
 
 const options = {
   definition: {
@@ -136,12 +138,22 @@ app.use(
 );
 
 app.use(
+  '/api/physicalttraits',
+  passport.authenticate('jwt', { session: false }),
+  physicalttraitsRoutes,
+);
+
+app.use(
+  '/api/styles',
+  passport.authenticate('jwt', { session: false }),
+  stylesRoutes,
+);
+
+app.use(
   '/api/openai',
   passport.authenticate('jwt', { session: false }),
   openaiRoutes,
 );
-
-app.use('/api/contact-form', contactFormRoutes);
 
 app.use(
   '/api/search',

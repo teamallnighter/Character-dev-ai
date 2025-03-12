@@ -28,34 +28,22 @@ import { SelectField } from '../../components/SelectField';
 import { SelectFieldMany } from '../../components/SelectFieldMany';
 import { RichTextField } from '../../components/RichTextField';
 
-import { create } from '../../stores/characters/charactersSlice';
+import { create } from '../../stores/physicalttraits/physicalttraitsSlice';
 import { useAppDispatch } from '../../stores/hooks';
 import { useRouter } from 'next/router';
 import moment from 'moment';
 
 const initialValues = {
-  name: '',
-
-  image: [],
-
-  creator: '',
-
-  traits: [],
-
-  scenarios: [],
-
-  versions: [],
-
-  Description: '',
+  Style: '',
 };
 
-const CharactersNew = () => {
+const PhysicalttraitsNew = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
   const handleSubmit = async (data) => {
     await dispatch(create(data));
-    await router.push('/characters/characters-list');
+    await router.push('/physicalttraits/physicalttraits-list');
   };
   return (
     <>
@@ -76,71 +64,13 @@ const CharactersNew = () => {
             onSubmit={(values) => handleSubmit(values)}
           >
             <Form>
-              <FormField label='CharacterName'>
-                <Field name='name' placeholder='CharacterName' />
-              </FormField>
-
-              <FormField>
+              <FormField label='Style' labelFor='Style'>
                 <Field
-                  label='CharacterImage'
-                  color='info'
-                  icon={mdiUpload}
-                  path={'characters/image'}
-                  name='image'
-                  id='image'
-                  schema={{
-                    size: undefined,
-                    formats: undefined,
-                  }}
-                  component={FormImagePicker}
-                ></Field>
-              </FormField>
-
-              <FormField label='Creator' labelFor='creator'>
-                <Field
-                  name='creator'
-                  id='creator'
+                  name='Style'
+                  id='Style'
                   component={SelectField}
                   options={[]}
-                  itemRef={'users'}
-                ></Field>
-              </FormField>
-
-              <FormField label='Traits' labelFor='traits'>
-                <Field
-                  name='traits'
-                  id='traits'
-                  itemRef={'traits'}
-                  options={[]}
-                  component={SelectFieldMany}
-                ></Field>
-              </FormField>
-
-              <FormField label='Scenarios' labelFor='scenarios'>
-                <Field
-                  name='scenarios'
-                  id='scenarios'
-                  itemRef={'scenarios'}
-                  options={[]}
-                  component={SelectFieldMany}
-                ></Field>
-              </FormField>
-
-              <FormField label='Versions' labelFor='versions'>
-                <Field
-                  name='versions'
-                  id='versions'
-                  itemRef={'versions'}
-                  options={[]}
-                  component={SelectFieldMany}
-                ></Field>
-              </FormField>
-
-              <FormField label='Description' hasTextareaHeight>
-                <Field
-                  name='Description'
-                  id='Description'
-                  component={RichTextField}
+                  itemRef={'styles'}
                 ></Field>
               </FormField>
 
@@ -153,7 +83,9 @@ const CharactersNew = () => {
                   color='danger'
                   outline
                   label='Cancel'
-                  onClick={() => router.push('/characters/characters-list')}
+                  onClick={() =>
+                    router.push('/physicalttraits/physicalttraits-list')
+                  }
                 />
               </BaseButtons>
             </Form>
@@ -164,12 +96,12 @@ const CharactersNew = () => {
   );
 };
 
-CharactersNew.getLayout = function getLayout(page: ReactElement) {
+PhysicalttraitsNew.getLayout = function getLayout(page: ReactElement) {
   return (
-    <LayoutAuthenticated permission={'CREATE_CHARACTERS'}>
+    <LayoutAuthenticated permission={'CREATE_PHYSICALTTRAITS'}>
       {page}
     </LayoutAuthenticated>
   );
 };
 
-export default CharactersNew;
+export default PhysicalttraitsNew;

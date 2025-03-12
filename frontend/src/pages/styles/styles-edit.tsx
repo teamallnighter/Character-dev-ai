@@ -26,34 +26,24 @@ import { SelectFieldMany } from '../../components/SelectFieldMany';
 import { SwitchField } from '../../components/SwitchField';
 import { RichTextField } from '../../components/RichTextField';
 
-import { update, fetch } from '../../stores/characters/charactersSlice';
+import { update, fetch } from '../../stores/styles/stylesSlice';
 import { useAppDispatch, useAppSelector } from '../../stores/hooks';
 import { useRouter } from 'next/router';
 import { saveFile } from '../../helpers/fileSaver';
 import dataFormatter from '../../helpers/dataFormatter';
 import ImageField from '../../components/ImageField';
 
-const EditCharactersPage = () => {
+const EditStylesPage = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const initVals = {
-    name: '',
-
-    image: [],
-
-    creator: '',
-
-    traits: [],
-
-    scenarios: [],
-
-    versions: [],
+    Name: '',
 
     Description: '',
   };
   const [initialValues, setInitialValues] = useState(initVals);
 
-  const { characters } = useAppSelector((state) => state.characters);
+  const { styles } = useAppSelector((state) => state.styles);
 
   const { id } = router.query;
 
@@ -62,37 +52,37 @@ const EditCharactersPage = () => {
   }, [id]);
 
   useEffect(() => {
-    if (typeof characters === 'object') {
-      setInitialValues(characters);
+    if (typeof styles === 'object') {
+      setInitialValues(styles);
     }
-  }, [characters]);
+  }, [styles]);
 
   useEffect(() => {
-    if (typeof characters === 'object') {
+    if (typeof styles === 'object') {
       const newInitialVal = { ...initVals };
 
       Object.keys(initVals).forEach(
-        (el) => (newInitialVal[el] = characters[el] || ''),
+        (el) => (newInitialVal[el] = styles[el] || ''),
       );
 
       setInitialValues(newInitialVal);
     }
-  }, [characters]);
+  }, [styles]);
 
   const handleSubmit = async (data) => {
     await dispatch(update({ id: id, data }));
-    await router.push('/characters/characters-list');
+    await router.push('/styles/styles-list');
   };
 
   return (
     <>
       <Head>
-        <title>{getPageTitle('Edit characters')}</title>
+        <title>{getPageTitle('Edit styles')}</title>
       </Head>
       <SectionMain>
         <SectionTitleLineWithButton
           icon={mdiChartTimelineVariant}
-          title={'Edit characters'}
+          title={'Edit styles'}
           main
         >
           {''}
@@ -104,76 +94,16 @@ const EditCharactersPage = () => {
             onSubmit={(values) => handleSubmit(values)}
           >
             <Form>
-              <FormField label='CharacterName'>
-                <Field name='name' placeholder='CharacterName' />
-              </FormField>
-
-              <FormField>
-                <Field
-                  label='CharacterImage'
-                  color='info'
-                  icon={mdiUpload}
-                  path={'characters/image'}
-                  name='image'
-                  id='image'
-                  schema={{
-                    size: undefined,
-                    formats: undefined,
-                  }}
-                  component={FormImagePicker}
-                ></Field>
-              </FormField>
-
-              <FormField label='Creator' labelFor='creator'>
-                <Field
-                  name='creator'
-                  id='creator'
-                  component={SelectField}
-                  options={initialValues.creator}
-                  itemRef={'users'}
-                  showField={'firstName'}
-                ></Field>
-              </FormField>
-
-              <FormField label='Traits' labelFor='traits'>
-                <Field
-                  name='traits'
-                  id='traits'
-                  component={SelectFieldMany}
-                  options={initialValues.traits}
-                  itemRef={'traits'}
-                  showField={'description'}
-                ></Field>
-              </FormField>
-
-              <FormField label='Scenarios' labelFor='scenarios'>
-                <Field
-                  name='scenarios'
-                  id='scenarios'
-                  component={SelectFieldMany}
-                  options={initialValues.scenarios}
-                  itemRef={'scenarios'}
-                  showField={'title'}
-                ></Field>
-              </FormField>
-
-              <FormField label='Versions' labelFor='versions'>
-                <Field
-                  name='versions'
-                  id='versions'
-                  component={SelectFieldMany}
-                  options={initialValues.versions}
-                  itemRef={'versions'}
-                  showField={'version_number'}
-                ></Field>
+              <FormField label='Name'>
+                <Field name='Name' placeholder='Name' />
               </FormField>
 
               <FormField label='Description' hasTextareaHeight>
                 <Field
                   name='Description'
-                  id='Description'
-                  component={RichTextField}
-                ></Field>
+                  as='textarea'
+                  placeholder='Description'
+                />
               </FormField>
 
               <BaseDivider />
@@ -185,7 +115,7 @@ const EditCharactersPage = () => {
                   color='danger'
                   outline
                   label='Cancel'
-                  onClick={() => router.push('/characters/characters-list')}
+                  onClick={() => router.push('/styles/styles-list')}
                 />
               </BaseButtons>
             </Form>
@@ -196,12 +126,12 @@ const EditCharactersPage = () => {
   );
 };
 
-EditCharactersPage.getLayout = function getLayout(page: ReactElement) {
+EditStylesPage.getLayout = function getLayout(page: ReactElement) {
   return (
-    <LayoutAuthenticated permission={'UPDATE_CHARACTERS'}>
+    <LayoutAuthenticated permission={'UPDATE_STYLES'}>
       {page}
     </LayoutAuthenticated>
   );
 };
 
-export default EditCharactersPage;
+export default EditStylesPage;

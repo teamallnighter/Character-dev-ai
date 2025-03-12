@@ -1,7 +1,7 @@
 const express = require('express');
 
-const CharactersService = require('../services/characters');
-const CharactersDBApi = require('../db/api/characters');
+const PhysicalttraitsService = require('../services/physicalttraits');
+const PhysicalttraitsDBApi = require('../db/api/physicalttraits');
 const wrapAsync = require('../helpers').wrapAsync;
 
 const router = express.Router();
@@ -10,39 +10,32 @@ const { parse } = require('json2csv');
 
 const { checkCrudPermissions } = require('../middlewares/check-permissions');
 
-router.use(checkCrudPermissions('characters'));
+router.use(checkCrudPermissions('physicalttraits'));
 
 /**
  *  @swagger
  *  components:
  *    schemas:
- *      Characters:
+ *      Physicalttraits:
  *        type: object
  *        properties:
-
- *          name:
- *            type: string
- *            default: name
- *          Description:
- *            type: string
- *            default: Description
 
  */
 
 /**
  *  @swagger
  * tags:
- *   name: Characters
- *   description: The Characters managing API
+ *   name: Physicalttraits
+ *   description: The Physicalttraits managing API
  */
 
 /**
  *  @swagger
- *  /api/characters:
+ *  /api/physicalttraits:
  *    post:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
+ *      tags: [Physicalttraits]
  *      summary: Add new item
  *      description: Add new item
  *      requestBody:
@@ -54,14 +47,14 @@ router.use(checkCrudPermissions('characters'));
  *                data:
  *                  description: Data of the updated item
  *                  type: object
- *                  $ref: "#/components/schemas/Characters"
+ *                  $ref: "#/components/schemas/Physicalttraits"
  *      responses:
  *        200:
  *          description: The item was successfully added
  *          content:
  *            application/json:
  *              schema:
- *                $ref: "#/components/schemas/Characters"
+ *                $ref: "#/components/schemas/Physicalttraits"
  *        401:
  *          $ref: "#/components/responses/UnauthorizedError"
  *        405:
@@ -76,7 +69,7 @@ router.post(
       req.headers.referer ||
       `${req.protocol}://${req.hostname}${req.originalUrl}`;
     const link = new URL(referer);
-    await CharactersService.create(
+    await PhysicalttraitsService.create(
       req.body.data,
       req.currentUser,
       true,
@@ -93,7 +86,7 @@ router.post(
  *  post:
  *    security:
  *      - bearerAuth: []
- *    tags: [Characters]
+ *    tags: [Physicalttraits]
  *    summary: Bulk import items
  *    description: Bulk import items
  *    requestBody:
@@ -106,14 +99,14 @@ router.post(
  *              description: Data of the updated items
  *              type: array
  *              items:
- *                $ref: "#/components/schemas/Characters"
+ *                $ref: "#/components/schemas/Physicalttraits"
  *    responses:
  *      200:
  *        description: The items were successfully imported
  *    content:
  *      application/json:
  *        schema:
- *          $ref: "#/components/schemas/Characters"
+ *          $ref: "#/components/schemas/Physicalttraits"
  *      401:
  *        $ref: "#/components/responses/UnauthorizedError"
  *      405:
@@ -129,7 +122,7 @@ router.post(
       req.headers.referer ||
       `${req.protocol}://${req.hostname}${req.originalUrl}`;
     const link = new URL(referer);
-    await CharactersService.bulkImport(req, res, true, link.host);
+    await PhysicalttraitsService.bulkImport(req, res, true, link.host);
     const payload = true;
     res.status(200).send(payload);
   }),
@@ -137,11 +130,11 @@ router.post(
 
 /**
  *  @swagger
- *  /api/characters/{id}:
+ *  /api/physicalttraits/{id}:
  *    put:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
+ *      tags: [Physicalttraits]
  *      summary: Update the data of the selected item
  *      description: Update the data of the selected item
  *      parameters:
@@ -164,7 +157,7 @@ router.post(
  *                data:
  *                  description: Data of the updated item
  *                  type: object
- *                  $ref: "#/components/schemas/Characters"
+ *                  $ref: "#/components/schemas/Physicalttraits"
  *              required:
  *                - id
  *      responses:
@@ -173,7 +166,7 @@ router.post(
  *          content:
  *            application/json:
  *              schema:
- *                $ref: "#/components/schemas/Characters"
+ *                $ref: "#/components/schemas/Physicalttraits"
  *        400:
  *          description: Invalid ID supplied
  *        401:
@@ -186,7 +179,11 @@ router.post(
 router.put(
   '/:id',
   wrapAsync(async (req, res) => {
-    await CharactersService.update(req.body.data, req.body.id, req.currentUser);
+    await PhysicalttraitsService.update(
+      req.body.data,
+      req.body.id,
+      req.currentUser,
+    );
     const payload = true;
     res.status(200).send(payload);
   }),
@@ -194,11 +191,11 @@ router.put(
 
 /**
  * @swagger
- *  /api/characters/{id}:
+ *  /api/physicalttraits/{id}:
  *    delete:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
+ *      tags: [Physicalttraits]
  *      summary: Delete the selected item
  *      description: Delete the selected item
  *      parameters:
@@ -214,7 +211,7 @@ router.put(
  *          content:
  *            application/json:
  *              schema:
- *                $ref: "#/components/schemas/Characters"
+ *                $ref: "#/components/schemas/Physicalttraits"
  *        400:
  *          description: Invalid ID supplied
  *        401:
@@ -227,7 +224,7 @@ router.put(
 router.delete(
   '/:id',
   wrapAsync(async (req, res) => {
-    await CharactersService.remove(req.params.id, req.currentUser);
+    await PhysicalttraitsService.remove(req.params.id, req.currentUser);
     const payload = true;
     res.status(200).send(payload);
   }),
@@ -235,11 +232,11 @@ router.delete(
 
 /**
  *  @swagger
- *  /api/characters/deleteByIds:
+ *  /api/physicalttraits/deleteByIds:
  *    post:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
+ *      tags: [Physicalttraits]
  *      summary: Delete the selected item list
  *      description: Delete the selected item list
  *      requestBody:
@@ -257,7 +254,7 @@ router.delete(
  *          content:
  *            application/json:
  *              schema:
- *                $ref: "#/components/schemas/Characters"
+ *                $ref: "#/components/schemas/Physicalttraits"
  *        401:
  *          $ref: "#/components/responses/UnauthorizedError"
  *        404:
@@ -268,7 +265,7 @@ router.delete(
 router.post(
   '/deleteByIds',
   wrapAsync(async (req, res) => {
-    await CharactersService.deleteByIds(req.body.data, req.currentUser);
+    await PhysicalttraitsService.deleteByIds(req.body.data, req.currentUser);
     const payload = true;
     res.status(200).send(payload);
   }),
@@ -276,22 +273,22 @@ router.post(
 
 /**
  *  @swagger
- *  /api/characters:
+ *  /api/physicalttraits:
  *    get:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
- *      summary: Get all characters
- *      description: Get all characters
+ *      tags: [Physicalttraits]
+ *      summary: Get all physicalttraits
+ *      description: Get all physicalttraits
  *      responses:
  *        200:
- *          description: Characters list successfully received
+ *          description: Physicalttraits list successfully received
  *          content:
  *            application/json:
  *              schema:
  *                type: array
  *                items:
- *                  $ref: "#/components/schemas/Characters"
+ *                  $ref: "#/components/schemas/Physicalttraits"
  *        401:
  *          $ref: "#/components/responses/UnauthorizedError"
  *        404:
@@ -304,9 +301,9 @@ router.get(
   wrapAsync(async (req, res) => {
     const filetype = req.query.filetype;
 
-    const payload = await CharactersDBApi.findAll(req.query);
+    const payload = await PhysicalttraitsDBApi.findAll(req.query);
     if (filetype && filetype === 'csv') {
-      const fields = ['id', 'name', 'Description'];
+      const fields = ['id'];
       const opts = { fields };
       try {
         const csv = parse(payload.rows, opts);
@@ -323,22 +320,22 @@ router.get(
 
 /**
  *  @swagger
- *  /api/characters/count:
+ *  /api/physicalttraits/count:
  *    get:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
- *      summary: Count all characters
- *      description: Count all characters
+ *      tags: [Physicalttraits]
+ *      summary: Count all physicalttraits
+ *      description: Count all physicalttraits
  *      responses:
  *        200:
- *          description: Characters count successfully received
+ *          description: Physicalttraits count successfully received
  *          content:
  *            application/json:
  *              schema:
  *                type: array
  *                items:
- *                  $ref: "#/components/schemas/Characters"
+ *                  $ref: "#/components/schemas/Physicalttraits"
  *        401:
  *          $ref: "#/components/responses/UnauthorizedError"
  *        404:
@@ -349,7 +346,7 @@ router.get(
 router.get(
   '/count',
   wrapAsync(async (req, res) => {
-    const payload = await CharactersDBApi.findAll(
+    const payload = await PhysicalttraitsDBApi.findAll(
       req.query,
 
       { countOnly: true },
@@ -361,22 +358,22 @@ router.get(
 
 /**
  *  @swagger
- *  /api/characters/autocomplete:
+ *  /api/physicalttraits/autocomplete:
  *    get:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
- *      summary: Find all characters that match search criteria
- *      description: Find all characters that match search criteria
+ *      tags: [Physicalttraits]
+ *      summary: Find all physicalttraits that match search criteria
+ *      description: Find all physicalttraits that match search criteria
  *      responses:
  *        200:
- *          description: Characters list successfully received
+ *          description: Physicalttraits list successfully received
  *          content:
  *            application/json:
  *              schema:
  *                type: array
  *                items:
- *                  $ref: "#/components/schemas/Characters"
+ *                  $ref: "#/components/schemas/Physicalttraits"
  *        401:
  *          $ref: "#/components/responses/UnauthorizedError"
  *        404:
@@ -385,7 +382,7 @@ router.get(
  *          description: Some server error
  */
 router.get('/autocomplete', async (req, res) => {
-  const payload = await CharactersDBApi.findAllAutocomplete(
+  const payload = await PhysicalttraitsDBApi.findAllAutocomplete(
     req.query.query,
     req.query.limit,
   );
@@ -395,11 +392,11 @@ router.get('/autocomplete', async (req, res) => {
 
 /**
  * @swagger
- *  /api/characters/{id}:
+ *  /api/physicalttraits/{id}:
  *    get:
  *      security:
  *        - bearerAuth: []
- *      tags: [Characters]
+ *      tags: [Physicalttraits]
  *      summary: Get selected item
  *      description: Get selected item
  *      parameters:
@@ -415,7 +412,7 @@ router.get('/autocomplete', async (req, res) => {
  *          content:
  *            application/json:
  *              schema:
- *                $ref: "#/components/schemas/Characters"
+ *                $ref: "#/components/schemas/Physicalttraits"
  *        400:
  *          description: Invalid ID supplied
  *        401:
@@ -428,7 +425,7 @@ router.get('/autocomplete', async (req, res) => {
 router.get(
   '/:id',
   wrapAsync(async (req, res) => {
-    const payload = await CharactersDBApi.findBy({ id: req.params.id });
+    const payload = await PhysicalttraitsDBApi.findBy({ id: req.params.id });
 
     res.status(200).send(payload);
   }),

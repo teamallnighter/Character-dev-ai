@@ -29,6 +29,8 @@ const Dashboard = () => {
   const [versions, setVersions] = React.useState('Loading...');
   const [roles, setRoles] = React.useState('Loading...');
   const [permissions, setPermissions] = React.useState('Loading...');
+  const [physicalttraits, setPhysicalttraits] = React.useState('Loading...');
+  const [styles, setStyles] = React.useState('Loading...');
 
   const [widgetsRole, setWidgetsRole] = React.useState({
     role: { value: '', label: '' },
@@ -47,6 +49,8 @@ const Dashboard = () => {
       'versions',
       'roles',
       'permissions',
+      'physicalttraits',
+      'styles',
     ];
     const fns = [
       setUsers,
@@ -56,6 +60,8 @@ const Dashboard = () => {
       setVersions,
       setRoles,
       setPermissions,
+      setPhysicalttraits,
+      setStyles,
     ];
 
     const requests = entities.map((entity, index) => {
@@ -381,6 +387,70 @@ const Dashboard = () => {
                       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                       // @ts-ignore
                       path={icon.mdiShieldAccountOutline || icon.mdiTable}
+                    />
+                  </div>
+                </div>
+              </div>
+            </Link>
+          )}
+
+          {hasPermission(currentUser, 'READ_PHYSICALTTRAITS') && (
+            <Link href={'/physicalttraits/physicalttraits-list'}>
+              <div
+                className={`${
+                  corners !== 'rounded-full' ? corners : 'rounded-3xl'
+                } dark:bg-dark-900 ${cardsStyle} dark:border-dark-700 p-6`}
+              >
+                <div className='flex justify-between align-center'>
+                  <div>
+                    <div className='text-lg leading-tight   text-gray-500 dark:text-gray-400'>
+                      Physicalttraits
+                    </div>
+                    <div className='text-3xl leading-tight font-semibold'>
+                      {physicalttraits}
+                    </div>
+                  </div>
+                  <div>
+                    <BaseIcon
+                      className={`${iconsColor}`}
+                      w='w-16'
+                      h='h-16'
+                      size={48}
+                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                      // @ts-ignore
+                      path={icon.mdiTable || icon.mdiTable}
+                    />
+                  </div>
+                </div>
+              </div>
+            </Link>
+          )}
+
+          {hasPermission(currentUser, 'READ_STYLES') && (
+            <Link href={'/styles/styles-list'}>
+              <div
+                className={`${
+                  corners !== 'rounded-full' ? corners : 'rounded-3xl'
+                } dark:bg-dark-900 ${cardsStyle} dark:border-dark-700 p-6`}
+              >
+                <div className='flex justify-between align-center'>
+                  <div>
+                    <div className='text-lg leading-tight   text-gray-500 dark:text-gray-400'>
+                      Styles
+                    </div>
+                    <div className='text-3xl leading-tight font-semibold'>
+                      {styles}
+                    </div>
+                  </div>
+                  <div>
+                    <BaseIcon
+                      className={`${iconsColor}`}
+                      w='w-16'
+                      h='h-16'
+                      size={48}
+                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                      // @ts-ignore
+                      path={icon.mdiTable || icon.mdiTable}
                     />
                   </div>
                 </div>
