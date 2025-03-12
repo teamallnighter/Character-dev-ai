@@ -1,9 +1,11 @@
 import React, { useEffect, useId, useState } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import { tinyKey } from '../config';
+import { useAppSelector } from '../stores/hooks';
 
 export const RichTextField = ({ options, field, form, itemRef, showField }) => {
   const [value, setValue] = useState(null);
+  const darkMode = useAppSelector((state) => state.style.darkMode);
 
   useEffect(() => {
     if (field.value) {
@@ -31,6 +33,8 @@ export const RichTextField = ({ options, field, form, itemRef, showField }) => {
           'bold italic backcolor | alignleft aligncenter ' +
           'alignright alignjustify | bullist numlist outdent indent | ' +
           'removeformat | code',
+
+        content_style: `${darkMode ? 'body { color: #ffffff; }' : ''}`,
       }}
     />
   );

@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useState } from 'react';
-import AsyncSelect from 'react-select/async';
+import { AsyncPaginate } from 'react-select-async-paginate';
 import axios from 'axios';
 
 export const RoleSelect = ({
@@ -11,6 +11,7 @@ export const RoleSelect = ({
   currentUser,
 }) => {
   const [value, setValue] = useState(null);
+  const PAGE_SIZE = 100;
 
   React.useEffect(() => {
     if (currentUser.app_role.id) {
@@ -36,18 +37,25 @@ export const RoleSelect = ({
     setValue(option);
   };
 
-  async function callApi() {
-    const data = await axios(`/${itemRef}/autocomplete?limit=100`);
-    return data.data.map(mapResponseToValuesAndLabels);
+  async function callApi(inputValue: string, loadedOptions: any[]) {
+    const path = `/${itemRef}/autocomplete?limit=${PAGE_SIZE}&offset=${
+      loadedOptions.length
+    }${inputValue ? `&query=${inputValue}` : ''}`;
+    const { data } = await axios(path);
+    return {
+      options: data.map(mapResponseToValuesAndLabels),
+      hasMore: data.length === PAGE_SIZE,
+    };
   }
   return (
-    <AsyncSelect
+    <AsyncPaginate
       classNames={{
         control: () => 'px-1 py-2',
       }}
       classNamePrefix={'react-select'}
       instanceId={useId()}
       value={value}
+      debounceTimeout={1000}
       loadOptions={callApi}
       onChange={handleChange}
       defaultOptions

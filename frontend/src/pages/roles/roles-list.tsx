@@ -28,7 +28,11 @@ const RolesTablesPage = () => {
 
   const dispatch = useAppDispatch();
 
-  const [filters] = useState([{ label: 'Name', title: 'name' }]);
+  const [filters] = useState([
+    { label: 'Name', title: 'name' },
+
+    { label: 'Permissions', title: 'permissions' },
+  ]);
 
   const hasCreatePermission =
     currentUser && hasPermission(currentUser, 'CREATE_ROLES');
@@ -122,6 +126,7 @@ const RolesTablesPage = () => {
             <div id='delete-rows-button'></div>
           </div>
         </CardBox>
+
         <CardBox className='mb-6' hasTable>
           <TableRoles
             filterItems={filterItems}

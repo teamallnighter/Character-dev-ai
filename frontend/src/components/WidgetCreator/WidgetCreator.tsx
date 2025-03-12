@@ -9,7 +9,6 @@ import {
   setErrorNotification,
   resetNotify,
 } from '../../stores/openAiSlice';
-import 'react-toastify/dist/ReactToastify.min.css';
 import { useAppDispatch, useAppSelector } from '../../stores/hooks';
 
 import { fetchWidgets } from '../../stores/roles/rolesSlice';

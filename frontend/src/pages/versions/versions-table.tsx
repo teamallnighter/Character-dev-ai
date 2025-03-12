@@ -32,6 +32,7 @@ const VersionsTablesPage = () => {
     { label: 'VersionNumber', title: 'version_number' },
 
     { label: 'CreatedOn', title: 'created_on', date: 'true' },
+
     { label: 'Character', title: 'character' },
   ]);
 

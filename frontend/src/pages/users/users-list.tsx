@@ -35,6 +35,8 @@ const UsersTablesPage = () => {
     { label: 'E-Mail', title: 'email' },
 
     { label: 'App Role', title: 'app_role' },
+
+    { label: 'Custom Permissions', title: 'custom_permissions' },
   ]);
 
   const hasCreatePermission =
@@ -133,6 +135,7 @@ const UsersTablesPage = () => {
             <div id='delete-rows-button'></div>
           </div>
         </CardBox>
+
         <CardBox className='mb-6' hasTable>
           <TableUsers
             filterItems={filterItems}

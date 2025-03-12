@@ -29,9 +29,8 @@ export default function UserAvatarCurrentUser({
   }, [currentUser?.id, users]);
 
   const currentUserAvatarCheck = () => {
-    if (currentUser?.id && users.length) {
-      const user = users.find((user) => user.id === currentUser.id);
-      const image = user?.avatar;
+    if (currentUser?.id) {
+      const image = currentUser?.avatar;
       setAvatar(image);
     }
   };

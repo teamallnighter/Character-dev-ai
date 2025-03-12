@@ -1,7 +1,6 @@
 import { mdiChartTimelineVariant, mdiUpload } from '@mdi/js';
 import Head from 'next/head';
 import React, { ReactElement, useEffect, useState } from 'react';
-import 'react-toastify/dist/ReactToastify.min.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import dayjs from 'dayjs';
@@ -41,7 +40,7 @@ const EditCharactersPage = () => {
 
     image: [],
 
-    creator: '',
+    creator: null,
 
     traits: [],
 
@@ -70,11 +69,9 @@ const EditCharactersPage = () => {
   useEffect(() => {
     if (typeof characters === 'object') {
       const newInitialVal = { ...initVals };
-
       Object.keys(initVals).forEach(
-        (el) => (newInitialVal[el] = characters[el] || ''),
+        (el) => (newInitialVal[el] = characters[el]),
       );
-
       setInitialValues(newInitialVal);
     }
   }, [characters]);

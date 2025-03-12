@@ -54,7 +54,8 @@ const config = {
 
   project_uuid: '3fa6c952-43ad-46d6-9d32-b0180ad65129',
   flHost:
-    process.env.NODE_ENV === 'production'
+    process.env.NODE_ENV === 'production' ||
+    process.env.NODE_ENV === 'dev_stage'
       ? 'https://flatlogic.com/projects'
       : 'http://localhost:3000/projects',
 };

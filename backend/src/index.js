@@ -5,7 +5,6 @@ const passport = require('passport');
 const path = require('path');
 const fs = require('fs');
 const bodyParser = require('body-parser');
-const helmet = require('helmet');
 const db = require('./db/models');
 const config = require('./config');
 const swaggerUI = require('swagger-ui-express');

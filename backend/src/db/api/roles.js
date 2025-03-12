@@ -61,18 +61,20 @@ module.exports = class RolesDBApi {
 
     const roles = await db.roles.findByPk(id, {}, { transaction });
 
-    await roles.update(
-      {
-        name: data.name || null,
-        role_customization: data.role_customization || null,
-        updatedById: currentUser.id,
-      },
-      { transaction },
-    );
+    const updatePayload = {};
 
-    await roles.setPermissions(data.permissions || [], {
-      transaction,
-    });
+    if (data.name !== undefined) updatePayload.name = data.name;
+
+    if (data.role_customization !== undefined)
+      updatePayload.role_customization = data.role_customization;
+
+    updatePayload.updatedById = currentUser.id;
+
+    await roles.update(updatePayload, { transaction });
+
+    if (data.permissions !== undefined) {
+      await roles.setPermissions(data.permissions, { transaction });
+    }
 
     return roles;
   }
@@ -149,6 +151,7 @@ module.exports = class RolesDBApi {
   static async findAll(filter, options) {
     const limit = filter.limit || 0;
     let offset = 0;
+    let where = {};
     const currentPage = +filter.page;
 
     offset = currentPage * limit;
@@ -156,21 +159,11 @@ module.exports = class RolesDBApi {
     const orderBy = null;
 
     const transaction = (options && options.transaction) || undefined;
-    let where = {};
+
     let include = [
       {
         model: db.permissions,
         as: 'permissions',
-        through: filter.permissions
-          ? {
-              where: {
-                [Op.or]: filter.permissions.split('|').map((item) => {
-                  return { ['Id']: Utils.uuid(item) };
-                }),
-              },
-            }
-          : null,
-        required: filter.permissions ? true : null,
       },
     ];
 
@@ -200,16 +193,43 @@ module.exports = class RolesDBApi {
         };
       }
 
-      if (
-        filter.active === true ||
-        filter.active === 'true' ||
-        filter.active === false ||
-        filter.active === 'false'
-      ) {
+      if (filter.active !== undefined) {
         where = {
           ...where,
           active: filter.active === true || filter.active === 'true',
         };
+      }
+
+      if (filter.permissions) {
+        const searchTerms = filter.permissions.split('|');
+
+        include = [
+          {
+            model: db.permissions,
+            as: 'permissions_filter',
+            required: searchTerms.length > 0,
+            where:
+              searchTerms.length > 0
+                ? {
+                    [Op.or]: [
+                      {
+                        id: {
+                          [Op.in]: searchTerms.map((term) => Utils.uuid(term)),
+                        },
+                      },
+                      {
+                        name: {
+                          [Op.or]: searchTerms.map((term) => ({
+                            [Op.iLike]: `%${term}%`,
+                          })),
+                        },
+                      },
+                    ],
+                  }
+                : undefined,
+          },
+          ...include,
+        ];
       }
 
       if (filter.createdAtRange) {
@@ -237,39 +257,37 @@ module.exports = class RolesDBApi {
       }
     }
 
-    let { rows, count } = options?.countOnly
-      ? {
-          rows: [],
-          count: await db.roles.count({
-            where,
-            include,
-            distinct: true,
-            limit: limit ? Number(limit) : undefined,
-            offset: offset ? Number(offset) : undefined,
-            order:
-              filter.field && filter.sort
-                ? [[filter.field, filter.sort]]
-                : [['createdAt', 'desc']],
-            transaction,
-          }),
-        }
-      : await db.roles.findAndCountAll({
-          where,
-          include,
-          distinct: true,
-          limit: limit ? Number(limit) : undefined,
-          offset: offset ? Number(offset) : undefined,
-          order:
-            filter.field && filter.sort
-              ? [[filter.field, filter.sort]]
-              : [['createdAt', 'desc']],
-          transaction,
-        });
+    const queryOptions = {
+      where,
+      include,
+      distinct: true,
+      order:
+        filter.field && filter.sort
+          ? [[filter.field, filter.sort]]
+          : [['createdAt', 'desc']],
+      transaction: options?.transaction,
+      logging: console.log,
+    };
 
-    return { rows, count };
+    if (!options?.countOnly) {
+      queryOptions.limit = limit ? Number(limit) : undefined;
+      queryOptions.offset = offset ? Number(offset) : undefined;
+    }
+
+    try {
+      const { rows, count } = await db.roles.findAndCountAll(queryOptions);
+
+      return {
+        rows: options?.countOnly ? [] : rows,
+        count: count,
+      };
+    } catch (error) {
+      console.error('Error executing query:', error);
+      throw error;
+    }
   }
 
-  static async findAllAutocomplete(query, limit) {
+  static async findAllAutocomplete(query, limit, offset) {
     let where = {};
 
     if (query) {
@@ -285,6 +303,7 @@ module.exports = class RolesDBApi {
       attributes: ['id', 'name'],
       where,
       limit: limit ? Number(limit) : undefined,
+      offset: offset ? Number(offset) : undefined,
       orderBy: [['name', 'ASC']],
     });
 

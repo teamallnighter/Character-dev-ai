@@ -9,6 +9,7 @@ import {
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import ListActionsPopover from './ListActionsPopover';
+import Link from 'next/link';
 
 import { useAppSelector } from '../stores/hooks';
 import { hasPermission } from '../helpers/userPermissions';
@@ -24,8 +25,6 @@ type TEvent = {
 
 type Props = {
   events: any[];
-  handleViewAction: (id: string) => void;
-  handleEditAction: (id: string) => void;
   handleDeleteAction: (id: string) => void;
   handleCreateEventAction: (slotInfo: SlotInfo) => void;
   onDateRangeChange: (range: { start: string; end: string }) => void;
@@ -39,8 +38,6 @@ type Props = {
 
 const BigCalendar = ({
   events,
-  handleViewAction,
-  handleEditAction,
   handleDeleteAction,
   handleCreateEventAction,
   onDateRangeChange,
@@ -128,8 +125,6 @@ const BigCalendar = ({
             <MyCustomEvent
               {...props}
               onDelete={handleDeleteAction}
-              onView={handleViewAction}
-              onEdit={handleEditAction}
               hasUpdatePermission={hasUpdatePermission}
               pathEdit={pathEdit}
               pathView={pathView}
@@ -144,39 +139,27 @@ const BigCalendar = ({
 const MyCustomEvent = (
   props: {
     onDelete: (id: string) => void;
-    onView: (id: string) => void;
-    onEdit: (id: string) => void;
     hasUpdatePermission: boolean;
     pathEdit?: string;
     pathView?: string;
   } & EventProps<TEvent>,
 ) => {
-  const {
-    onEdit,
-    onView,
-    onDelete,
-    hasUpdatePermission,
-    title,
-    event,
-    pathEdit,
-    pathView,
-  } = props;
+  const { onDelete, hasUpdatePermission, title, event, pathEdit, pathView } =
+    props;
 
   return (
     <div className={'flex items-center justify-between relative'}>
-      <span
+      <Link
+        href={`${pathView}${event.id}`}
         className={'text-ellipsis overflow-hidden grow'}
-        onClick={() => onView(event.id)}
       >
         {title}
-      </span>
+      </Link>
       <ListActionsPopover
         className={'w-2 h-2 text-white'}
         iconClassName={'text-white w-5'}
         itemId={event.id}
         onDelete={onDelete}
-        onView={onView}
-        onEdit={onEdit}
         pathEdit={`${pathEdit}${event.id}`}
         pathView={`${pathView}${event.id}`}
         hasUpdatePermission={hasUpdatePermission}

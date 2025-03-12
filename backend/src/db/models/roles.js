@@ -45,6 +45,15 @@ module.exports = function (sequelize, DataTypes) {
       through: 'rolesPermissionsPermissions',
     });
 
+    db.roles.belongsToMany(db.permissions, {
+      as: 'permissions_filter',
+      foreignKey: {
+        name: 'roles_permissionsId',
+      },
+      constraints: false,
+      through: 'rolesPermissionsPermissions',
+    });
+
     /// loop through entities and it's fields, and if ref === current e[name] and create relation has many on parent entity
 
     db.roles.hasMany(db.users, {

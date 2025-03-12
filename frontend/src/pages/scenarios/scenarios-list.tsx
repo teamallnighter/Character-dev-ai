@@ -129,6 +129,7 @@ const ScenariosTablesPage = () => {
             <Link href={'/scenarios/scenarios-table'}>Switch to Table</Link>
           </div>
         </CardBox>
+
         <CardBox className='mb-6' hasTable>
           <TableScenarios
             filterItems={filterItems}

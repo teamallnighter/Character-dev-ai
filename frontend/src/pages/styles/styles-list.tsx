@@ -125,6 +125,7 @@ const StylesTablesPage = () => {
             <div id='delete-rows-button'></div>
           </div>
         </CardBox>
+
         <CardBox className='mb-6' hasTable>
           <TableStyles
             filterItems={filterItems}

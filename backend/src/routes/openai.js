@@ -5,6 +5,7 @@ const router = express.Router();
 const sjs = require('sequelize-json-schema');
 const { getWidget } = require('../services/openai');
 const RolesService = require('../services/roles');
+const RolesDBApi = require('../db/api/roles');
 
 /**
  * @swagger
@@ -115,11 +116,33 @@ router.delete(
 router.get(
   '/info-by-key',
   wrapAsync(async (req, res) => {
-    const info = await RolesService.getRoleInfoByKey(
-      req.query.key,
-      req.query.roleId,
-      req.currentUser,
-    );
+    const roleId = req.query.roleId;
+    const key = req.query.key;
+    const currentUser = req.currentUser;
+    let info = await RolesService.getRoleInfoByKey(key, roleId, currentUser);
+    const role = await RolesDBApi.findBy({ id: roleId });
+    if (!role?.role_customization) {
+      await Promise.all(
+        ['pie', 'bar'].map(async (e) => {
+          const schema = await sjs.getSequelizeSchema(db.sequelize, {});
+          const payload = {
+            description: `Create some cool ${e} chart`,
+            modelDefinition: schema.definitions,
+          };
+          const widgetId = await getWidget(payload, currentUser?.id, roleId);
+          if (widgetId) {
+            await RolesService.addRoleInfo(
+              roleId,
+              currentUser?.id,
+              'widgets',
+              widgetId,
+              req.currentUser,
+            );
+          }
+        }),
+      );
+      info = await RolesService.getRoleInfoByKey(key, roleId, currentUser);
+    }
     res.status(200).send(info);
   }),
 );

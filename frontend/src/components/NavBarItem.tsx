@@ -32,7 +32,11 @@ export default function NavBarItem({ item }: Props) {
     (state) => state.style.navBarItemLabelHoverStyle,
   );
 
-  const userName = useAppSelector((state) => state.main.userName);
+  const currentUser = useAppSelector((state) => state.auth.currentUser);
+
+  const userName = `${currentUser?.firstName ? currentUser?.firstName : ''} ${
+    currentUser?.lastName ? currentUser?.lastName : ''
+  }`;
 
   const [isDropdownActive, setIsDropdownActive] = useState(false);
 
@@ -92,7 +96,7 @@ export default function NavBarItem({ item }: Props) {
           <BaseIcon path={item.icon} size={22} className='transition-colors' />
         )}
         <span
-          className={`px-2 transition-colors w-20 grow ${
+          className={`px-2 transition-colors w-40 grow ${
             item.isDesktopNoLabel && item.icon ? 'lg:hidden' : ''
           }`}
         >

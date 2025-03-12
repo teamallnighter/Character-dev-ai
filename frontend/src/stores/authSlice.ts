@@ -27,9 +27,16 @@ export const resetAction = createAction('auth/passwordReset/reset');
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (creds: Record<string, string>) => {
-    const response = await axios.post('auth/signin/local', creds);
-    return response.data;
+  async (creds: Record<string, string>, { rejectWithValue }) => {
+    try {
+      const response = await axios.post('auth/signin/local', creds);
+      return response.data;
+    } catch (error) {
+      if (!error.response) {
+        throw error;
+      }
+      return rejectWithValue(error.response.data);
+    }
   },
 );
 
@@ -86,8 +93,9 @@ export const authSlice = createSlice({
       axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     });
 
-    builder.addCase(loginUser.rejected, (state) => {
-      state.errorMessage = 'Something was wrong. Try again';
+    builder.addCase(loginUser.rejected, (state, action) => {
+      state.errorMessage =
+        String(action.payload) || 'Something went wrong. Try again';
       state.isFetching = false;
     });
     builder.addCase(findMe.pending, () => {

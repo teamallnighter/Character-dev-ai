@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
 import BaseButton from '../BaseButton';
 import CardBoxModal from '../CardBoxModal';
 import CardBox from '../CardBox';
@@ -29,9 +28,10 @@ const TableSampleUsers = ({
   filters,
   showGrid,
 }) => {
+  const notify = (type, msg) => toast(msg, { type, position: 'bottom-center' });
+
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const notify = (type, msg) => toast(msg, { type, position: 'bottom-center' });
 
   const pagesList = [];
   const [id, setId] = useState(null);
@@ -45,6 +45,7 @@ const TableSampleUsers = ({
       sort: 'desc',
     },
   ]);
+
   const {
     users,
     loading,
@@ -56,7 +57,6 @@ const TableSampleUsers = ({
   const focusRing = useAppSelector((state) => state.style.focusRingColor);
   const bgColor = useAppSelector((state) => state.style.bgLayoutColor);
   const corners = useAppSelector((state) => state.style.corners);
-
   const numPages =
     Math.floor(count / perPage) === 0 ? 1 : Math.ceil(count / perPage);
   for (let i = 0; i < numPages; i++) {
@@ -98,14 +98,6 @@ const TableSampleUsers = ({
     setIsModalTrashActive(false);
   };
 
-  const handleEditAction = (id: string) => {
-    router.push(`/users/${id}`);
-  };
-
-  const handleViewAction = (id: string) => {
-    router.push(`/users/users-view/?id=${id}`);
-  };
-
   const handleDeleteModalAction = (id: string) => {
     setId(id);
     setIsModalTrashActive(true);
@@ -121,13 +113,27 @@ const TableSampleUsers = ({
   const generateFilterRequests = useMemo(() => {
     let request = '&';
     filterItems.forEach((item) => {
-      filters.find(
+      const isRangeFilter = filters.find(
         (filter) =>
           filter.title === item.fields.selectedField &&
           (filter.number || filter.date),
-      )
-        ? (request += `${item.fields.selectedField}Range=${item.fields.filterValueFrom}&${item.fields.selectedField}Range=${item.fields.filterValueTo}&`)
-        : (request += `${item.fields.selectedField}=${item.fields.filterValue}&`);
+      );
+
+      if (isRangeFilter) {
+        const from = item.fields.filterValueFrom;
+        const to = item.fields.filterValueTo;
+        if (from) {
+          request += `${item.fields.selectedField}Range=${from}&`;
+        }
+        if (to) {
+          request += `${item.fields.selectedField}Range=${to}&`;
+        }
+      } else {
+        const value = item.fields.filterValue;
+        if (value) {
+          request += `${item.fields.selectedField}=${value}&`;
+        }
+      }
     });
     return request;
   }, [filterItems, filters]);
@@ -139,6 +145,7 @@ const TableSampleUsers = ({
       setFilterItems(newItems);
     } else {
       loadData(0, '');
+
       setFilterItems(newItems);
     }
   };
@@ -152,11 +159,12 @@ const TableSampleUsers = ({
     const name = e.target.name;
 
     setFilterItems(
-      filterItems.map((item) =>
-        item.id === id
-          ? { id, fields: { ...item.fields, [name]: value } }
-          : item,
-      ),
+      filterItems.map((item) => {
+        if (item.id !== id) return item;
+        if (name === 'selectedField') return { id, fields: { [name]: value } };
+
+        return { id, fields: { ...item.fields, [name]: value } };
+      }),
     );
   };
 
@@ -173,13 +181,9 @@ const TableSampleUsers = ({
   useEffect(() => {
     if (!currentUser) return;
 
-    loadColumns(
-      handleDeleteModalAction,
-      handleViewAction,
-      handleEditAction,
-      `users`,
-      currentUser,
-    ).then((newCols) => setColumns(newCols));
+    loadColumns(handleDeleteModalAction, `users`, currentUser).then((newCols) =>
+      setColumns(newCols),
+    );
   }, [currentUser]);
 
   const handleTableSubmit = async (id: string, data) => {
@@ -283,7 +287,7 @@ const TableSampleUsers = ({
                             name='selectedField'
                             id='selectedField'
                             component='select'
-                            value={filterItem?.fields?.selectedField}
+                            value={filterItem?.fields?.selectedField || ''}
                             onChange={handleChange(filterItem.id)}
                           >
                             {filters.map((selectOption) => (
@@ -299,7 +303,36 @@ const TableSampleUsers = ({
                         {filters.find(
                           (filter) =>
                             filter.title === filterItem?.fields?.selectedField,
-                        )?.number ? (
+                        )?.type === 'enum' ? (
+                          <div className='flex flex-col w-full mr-3'>
+                            <div className='text-gray-500 font-bold'>Value</div>
+                            <Field
+                              className={controlClasses}
+                              name='filterValue'
+                              id='filterValue'
+                              component='select'
+                              value={filterItem?.fields?.filterValue || ''}
+                              onChange={handleChange(filterItem.id)}
+                            >
+                              <option value=''>Select Value</option>
+                              {filters
+                                .find(
+                                  (filter) =>
+                                    filter.title ===
+                                    filterItem?.fields?.selectedField,
+                                )
+                                ?.options?.map((option) => (
+                                  <option key={option} value={option}>
+                                    {option}
+                                  </option>
+                                ))}
+                            </Field>
+                          </div>
+                        ) : filters.find(
+                            (filter) =>
+                              filter.title ===
+                              filterItem?.fields?.selectedField,
+                          )?.number ? (
                           <div className='flex flex-row w-full mr-3'>
                             <div className='flex flex-col w-full mr-3'>
                               <div className='  text-gray-500  font-bold'>
@@ -310,6 +343,9 @@ const TableSampleUsers = ({
                                 name='filterValueFrom'
                                 placeholder='From'
                                 id='filterValueFrom'
+                                value={
+                                  filterItem?.fields?.filterValueFrom || ''
+                                }
                                 onChange={handleChange(filterItem.id)}
                               />
                             </div>
@@ -322,6 +358,7 @@ const TableSampleUsers = ({
                                 name='filterValueTo'
                                 placeholder='to'
                                 id='filterValueTo'
+                                value={filterItem?.fields?.filterValueTo || ''}
                                 onChange={handleChange(filterItem.id)}
                               />
                             </div>
@@ -342,6 +379,9 @@ const TableSampleUsers = ({
                                 placeholder='From'
                                 id='filterValueFrom'
                                 type='datetime-local'
+                                value={
+                                  filterItem?.fields?.filterValueFrom || ''
+                                }
                                 onChange={handleChange(filterItem.id)}
                               />
                             </div>
@@ -355,6 +395,7 @@ const TableSampleUsers = ({
                                 placeholder='to'
                                 id='filterValueTo'
                                 type='datetime-local'
+                                value={filterItem?.fields?.filterValueTo || ''}
                                 onChange={handleChange(filterItem.id)}
                               />
                             </div>
@@ -369,6 +410,7 @@ const TableSampleUsers = ({
                               name='filterValue'
                               placeholder='Contained'
                               id='filterValue'
+                              value={filterItem?.fields?.filterValue || ''}
                               onChange={handleChange(filterItem.id)}
                             />
                           </div>
@@ -432,7 +474,6 @@ const TableSampleUsers = ({
           />,
           document.getElementById('delete-rows-button'),
         )}
-
       <ToastContainer />
     </>
   );

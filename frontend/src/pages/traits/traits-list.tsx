@@ -126,6 +126,7 @@ const TraitsTablesPage = () => {
             <Link href={'/traits/traits-table'}>Switch to Table</Link>
           </div>
         </CardBox>
+
         <CardBox className='mb-6' hasTable>
           <TableTraits
             filterItems={filterItems}

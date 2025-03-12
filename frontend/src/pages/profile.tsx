@@ -2,7 +2,6 @@ import { mdiChartTimelineVariant, mdiUpload } from '@mdi/js';
 import Head from 'next/head';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -26,6 +25,7 @@ import { SelectField } from '../components/SelectField';
 import { update, fetch } from '../stores/users/usersSlice';
 import { useAppDispatch, useAppSelector } from '../stores/hooks';
 import { useRouter } from 'next/router';
+import { findMe } from '../stores/authSlice';
 
 const EditUsers = () => {
   const { currentUser, isFetching, token } = useAppSelector(
@@ -51,7 +51,7 @@ const EditUsers = () => {
       const newInitialVal = { ...initVals };
 
       Object.keys(initVals).forEach(
-        (el) => (newInitialVal[el] = currentUser[el] || ''),
+        (el) => (newInitialVal[el] = currentUser[el]),
       );
 
       setInitialValues(newInitialVal);
@@ -60,6 +60,7 @@ const EditUsers = () => {
 
   const handleSubmit = async (data) => {
     await dispatch(update({ id: currentUser.id, data }));
+    await dispatch(findMe());
     await router.push('/users/users-list');
     notify('success', 'Profile was updated!');
   };
@@ -78,12 +79,38 @@ const EditUsers = () => {
           {''}
         </SectionTitleLineWithButton>
         <CardBox>
+          {currentUser?.avatar[0]?.publicUrl && (
+            <div className={'grid grid-cols-6 gap-4 mb-4'}>
+              <div className='col-span-1 w-80 h-80 overflow-hidden border-2 rounded-full inline-flex items-center justify-center mb-8'>
+                <img
+                  className='w-80 h-80 max-w-full max-h-full object-cover object-center'
+                  src={`${currentUser?.avatar[0]?.publicUrl}`}
+                  alt='Avatar'
+                />
+              </div>
+            </div>
+          )}
           <Formik
             enableReinitialize
             initialValues={initialValues}
             onSubmit={(values) => handleSubmit(values)}
           >
             <Form>
+              <FormField>
+                <Field
+                  label='Avatar'
+                  color='info'
+                  icon={mdiUpload}
+                  path={'users/avatar'}
+                  name='avatar'
+                  id='avatar'
+                  schema={{
+                    size: undefined,
+                    formats: undefined,
+                  }}
+                  component={FormImagePicker}
+                ></Field>
+              </FormField>
               <FormField label='First Name'>
                 <Field name='firstName' placeholder='First Name' />
               </FormField>
@@ -119,21 +146,6 @@ const EditUsers = () => {
                 ></Field>
               </FormField>
 
-              <FormField>
-                <Field
-                  label='Avatar'
-                  color='info'
-                  icon={mdiUpload}
-                  path={'users/avatar'}
-                  name='avatar'
-                  id='avatar'
-                  schema={{
-                    size: undefined,
-                    formats: undefined,
-                  }}
-                  component={FormImagePicker}
-                ></Field>
-              </FormField>
               <FormField label='Password'>
                 <Field name='password' placeholder='password' />
               </FormField>

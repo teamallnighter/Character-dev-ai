@@ -91,6 +91,15 @@ module.exports = function (sequelize, DataTypes) {
       through: 'usersCustom_permissionsPermissions',
     });
 
+    db.users.belongsToMany(db.permissions, {
+      as: 'custom_permissions_filter',
+      foreignKey: {
+        name: 'users_custom_permissionsId',
+      },
+      constraints: false,
+      through: 'usersCustom_permissionsPermissions',
+    });
+
     /// loop through entities and it's fields, and if ref === current e[name] and create relation has many on parent entity
 
     db.users.hasMany(db.characters, {

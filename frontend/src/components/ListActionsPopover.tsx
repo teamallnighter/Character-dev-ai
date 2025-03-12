@@ -14,20 +14,16 @@ import { IconButton } from '@mui/material';
 type Props = {
   itemId: string;
   onDelete: (id: string) => void;
-  onView: (id: string) => void;
-  onEdit: (id: string) => void;
   hasUpdatePermission: boolean;
   className?: string;
   iconClassName?: string;
-  pathEdit?: string;
-  pathView?: string;
+  pathEdit: string;
+  pathView: string;
 };
 
 const ListActionsPopover = ({
   itemId,
   onDelete,
-  onView,
-  onEdit,
   hasUpdatePermission,
   className,
   iconClassName,
@@ -78,31 +74,23 @@ const ListActionsPopover = ({
         }}
       >
         <div className={'flex  flex-col'}>
-          <Link href={linkView} passHref>
+          <Button
+            startIcon={<BaseIcon path={mdiEye} size={24} />}
+            className='w-full MuiButton-colorInherit'
+            href={linkView}
+            sx={{ justifyContent: 'start' }}
+          >
+            View
+          </Button>
+          {hasUpdatePermission && (
             <Button
-              startIcon={<BaseIcon path={mdiEye} size={24} />}
+              startIcon={<BaseIcon path={mdiPencilOutline} size={24} />}
               className='w-full MuiButton-colorInherit'
-              onClick={() => {
-                onView(itemId);
-              }}
+              href={linkEdit}
               sx={{ justifyContent: 'start' }}
             >
-              View
+              Edit
             </Button>
-          </Link>
-          {hasUpdatePermission && (
-            <Link href={linkEdit} passHref>
-              <Button
-                startIcon={<BaseIcon path={mdiPencilOutline} size={24} />}
-                className='w-full MuiButton-colorInherit'
-                onClick={() => {
-                  onEdit(itemId);
-                }}
-                sx={{ justifyContent: 'start' }}
-              >
-                Edit
-              </Button>
-            </Link>
           )}
           {hasUpdatePermission && (
             <Button

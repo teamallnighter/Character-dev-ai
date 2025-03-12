@@ -1,6 +1,5 @@
 import React, { ReactElement, useEffect } from 'react';
 import Head from 'next/head';
-import 'react-toastify/dist/ReactToastify.min.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import dayjs from 'dayjs';
@@ -48,7 +47,11 @@ const StylesView = () => {
           title={removeLastCharacter('View styles')}
           main
         >
-          {''}
+          <BaseButton
+            color='info'
+            label='Edit'
+            href={`/styles/styles-edit/?id=${id}`}
+          />
         </SectionTitleLineWithButton>
         <CardBox>
           <div className={'mb-4'}>

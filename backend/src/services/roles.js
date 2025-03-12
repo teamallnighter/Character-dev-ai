@@ -106,7 +106,7 @@ async function constructWidgetsResults(widgets, currentUser) {
 }
 
 async function fetchWidgetsData(widgets) {
-  const widgetPromises = widgets.map((widgetId) =>
+  const widgetPromises = (widgets || []).map((widgetId) =>
     axios.get(
       `${config.flHost}/${config.project_uuid}/project_customization_widgets/${widgetId}.json`,
     ),

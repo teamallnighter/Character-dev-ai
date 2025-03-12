@@ -125,6 +125,7 @@ const PhysicalttraitsTablesPage = () => {
             <div id='delete-rows-button'></div>
           </div>
         </CardBox>
+
         <CardBox className='mb-6' hasTable>
           <TablePhysicalttraits
             filterItems={filterItems}

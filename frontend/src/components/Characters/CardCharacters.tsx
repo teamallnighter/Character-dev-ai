@@ -6,6 +6,7 @@ import dataFormatter from '../../helpers/dataFormatter';
 import { Pagination } from '../Pagination';
 import { saveFile } from '../../helpers/fileSaver';
 import LoadingSpinner from '../LoadingSpinner';
+import Link from 'next/link';
 
 import { hasPermission } from '../../helpers/userPermissions';
 
@@ -13,18 +14,14 @@ type Props = {
   characters: any[];
   loading: boolean;
   onDelete: (id: string) => void;
-  onView: (id: string) => void;
-  onEdit: (id: string) => void;
   currentPage: number;
   numPages: number;
   onPageChange: (page: number) => void;
 };
 
-const CardUsers = ({
+const CardCharacters = ({
   characters,
   loading,
-  onEdit,
-  onView,
   onDelete,
   currentPage,
   numPages,
@@ -61,8 +58,8 @@ const CardUsers = ({
               <div
                 className={`flex items-center ${bgColor} p-6  md:p-0 md:block  gap-x-4 border-b border-gray-900/5 bg-gray-50 dark:bg-dark-800 relative`}
               >
-                <div
-                  onClick={() => onView(item.id)}
+                <Link
+                  href={`/characters/characters-view/?id=${item.id}`}
                   className={'cursor-pointer'}
                 >
                   <ImageField
@@ -72,13 +69,11 @@ const CardUsers = ({
                     imageClassName='h-full w-full flex-none rounded-lg md:rounded-b-none bg-white object-cover'
                   />
                   <p className={'px-6 py-2 font-semibold'}>{item.name}</p>
-                </div>
+                </Link>
 
                 <div className='ml-auto  md:absolute md:top-0 md:right-0 '>
                   <ListActionsPopover
                     onDelete={onDelete}
-                    onView={onView}
-                    onEdit={onEdit}
                     itemId={item.id}
                     pathEdit={`/characters/characters-edit/?id=${item.id}`}
                     pathView={`/characters/characters-view/?id=${item.id}`}
@@ -191,4 +186,4 @@ const CardUsers = ({
   );
 };
 
-export default CardUsers;
+export default CardCharacters;

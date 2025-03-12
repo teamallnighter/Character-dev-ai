@@ -143,35 +143,58 @@ module.exports = class UsersDBApi {
       data.password = users.password;
     }
 
-    await users.update(
-      {
-        firstName: data.firstName || null,
-        lastName: data.lastName || null,
-        phoneNumber: data.phoneNumber || null,
-        email: data.email || null,
-        disabled: data.disabled || false,
+    const updatePayload = {};
 
-        password: data.password || null,
-        emailVerified: data.emailVerified || true,
+    if (data.firstName !== undefined) updatePayload.firstName = data.firstName;
 
-        emailVerificationToken: data.emailVerificationToken || null,
-        emailVerificationTokenExpiresAt:
-          data.emailVerificationTokenExpiresAt || null,
-        passwordResetToken: data.passwordResetToken || null,
-        passwordResetTokenExpiresAt: data.passwordResetTokenExpiresAt || null,
-        provider: data.provider || null,
-        updatedById: currentUser.id,
-      },
-      { transaction },
-    );
+    if (data.lastName !== undefined) updatePayload.lastName = data.lastName;
 
-    await users.setApp_role(data.app_role || null, {
-      transaction,
-    });
+    if (data.phoneNumber !== undefined)
+      updatePayload.phoneNumber = data.phoneNumber;
 
-    await users.setCustom_permissions(data.custom_permissions || [], {
-      transaction,
-    });
+    if (data.email !== undefined) updatePayload.email = data.email;
+
+    if (data.disabled !== undefined) updatePayload.disabled = data.disabled;
+
+    if (data.password !== undefined) updatePayload.password = data.password;
+
+    if (data.emailVerified !== undefined)
+      updatePayload.emailVerified = data.emailVerified;
+    else updatePayload.emailVerified = true;
+
+    if (data.emailVerificationToken !== undefined)
+      updatePayload.emailVerificationToken = data.emailVerificationToken;
+
+    if (data.emailVerificationTokenExpiresAt !== undefined)
+      updatePayload.emailVerificationTokenExpiresAt =
+        data.emailVerificationTokenExpiresAt;
+
+    if (data.passwordResetToken !== undefined)
+      updatePayload.passwordResetToken = data.passwordResetToken;
+
+    if (data.passwordResetTokenExpiresAt !== undefined)
+      updatePayload.passwordResetTokenExpiresAt =
+        data.passwordResetTokenExpiresAt;
+
+    if (data.provider !== undefined) updatePayload.provider = data.provider;
+
+    updatePayload.updatedById = currentUser.id;
+
+    await users.update(updatePayload, { transaction });
+
+    if (data.app_role !== undefined) {
+      await users.setApp_role(
+        data.app_role,
+
+        { transaction },
+      );
+    }
+
+    if (data.custom_permissions !== undefined) {
+      await users.setCustom_permissions(data.custom_permissions, {
+        transaction,
+      });
+    }
 
     await FileDBApi.replaceRelationFiles(
       {
@@ -272,6 +295,7 @@ module.exports = class UsersDBApi {
   static async findAll(filter, options) {
     const limit = filter.limit || 0;
     let offset = 0;
+    let where = {};
     const currentPage = +filter.page;
 
     offset = currentPage * limit;
@@ -279,26 +303,37 @@ module.exports = class UsersDBApi {
     const orderBy = null;
 
     const transaction = (options && options.transaction) || undefined;
-    let where = {};
+
     let include = [
       {
         model: db.roles,
         as: 'app_role',
+
+        where: filter.app_role
+          ? {
+              [Op.or]: [
+                {
+                  id: {
+                    [Op.in]: filter.app_role
+                      .split('|')
+                      .map((term) => Utils.uuid(term)),
+                  },
+                },
+                {
+                  name: {
+                    [Op.or]: filter.app_role
+                      .split('|')
+                      .map((term) => ({ [Op.iLike]: `%${term}%` })),
+                  },
+                },
+              ],
+            }
+          : {},
       },
 
       {
         model: db.permissions,
         as: 'custom_permissions',
-        through: filter.custom_permissions
-          ? {
-              where: {
-                [Op.or]: filter.custom_permissions.split('|').map((item) => {
-                  return { ['Id']: Utils.uuid(item) };
-                }),
-              },
-            }
-          : null,
-        required: filter.custom_permissions ? true : null,
       },
 
       {
@@ -427,12 +462,7 @@ module.exports = class UsersDBApi {
         }
       }
 
-      if (
-        filter.active === true ||
-        filter.active === 'true' ||
-        filter.active === false ||
-        filter.active === 'false'
-      ) {
+      if (filter.active !== undefined) {
         where = {
           ...where,
           active: filter.active === true || filter.active === 'true',
@@ -453,15 +483,36 @@ module.exports = class UsersDBApi {
         };
       }
 
-      if (filter.app_role) {
-        const listItems = filter.app_role.split('|').map((item) => {
-          return Utils.uuid(item);
-        });
+      if (filter.custom_permissions) {
+        const searchTerms = filter.custom_permissions.split('|');
 
-        where = {
-          ...where,
-          app_roleId: { [Op.or]: listItems },
-        };
+        include = [
+          {
+            model: db.permissions,
+            as: 'custom_permissions_filter',
+            required: searchTerms.length > 0,
+            where:
+              searchTerms.length > 0
+                ? {
+                    [Op.or]: [
+                      {
+                        id: {
+                          [Op.in]: searchTerms.map((term) => Utils.uuid(term)),
+                        },
+                      },
+                      {
+                        name: {
+                          [Op.or]: searchTerms.map((term) => ({
+                            [Op.iLike]: `%${term}%`,
+                          })),
+                        },
+                      },
+                    ],
+                  }
+                : undefined,
+          },
+          ...include,
+        ];
       }
 
       if (filter.createdAtRange) {
@@ -489,39 +540,37 @@ module.exports = class UsersDBApi {
       }
     }
 
-    let { rows, count } = options?.countOnly
-      ? {
-          rows: [],
-          count: await db.users.count({
-            where,
-            include,
-            distinct: true,
-            limit: limit ? Number(limit) : undefined,
-            offset: offset ? Number(offset) : undefined,
-            order:
-              filter.field && filter.sort
-                ? [[filter.field, filter.sort]]
-                : [['createdAt', 'desc']],
-            transaction,
-          }),
-        }
-      : await db.users.findAndCountAll({
-          where,
-          include,
-          distinct: true,
-          limit: limit ? Number(limit) : undefined,
-          offset: offset ? Number(offset) : undefined,
-          order:
-            filter.field && filter.sort
-              ? [[filter.field, filter.sort]]
-              : [['createdAt', 'desc']],
-          transaction,
-        });
+    const queryOptions = {
+      where,
+      include,
+      distinct: true,
+      order:
+        filter.field && filter.sort
+          ? [[filter.field, filter.sort]]
+          : [['createdAt', 'desc']],
+      transaction: options?.transaction,
+      logging: console.log,
+    };
 
-    return { rows, count };
+    if (!options?.countOnly) {
+      queryOptions.limit = limit ? Number(limit) : undefined;
+      queryOptions.offset = offset ? Number(offset) : undefined;
+    }
+
+    try {
+      const { rows, count } = await db.users.findAndCountAll(queryOptions);
+
+      return {
+        rows: options?.countOnly ? [] : rows,
+        count: count,
+      };
+    } catch (error) {
+      console.error('Error executing query:', error);
+      throw error;
+    }
   }
 
-  static async findAllAutocomplete(query, limit) {
+  static async findAllAutocomplete(query, limit, offset) {
     let where = {};
 
     if (query) {
@@ -537,6 +586,7 @@ module.exports = class UsersDBApi {
       attributes: ['id', 'firstName'],
       where,
       limit: limit ? Number(limit) : undefined,
+      offset: offset ? Number(offset) : undefined,
       orderBy: [['firstName', 'ASC']],
     });
 

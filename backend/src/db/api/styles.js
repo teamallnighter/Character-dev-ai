@@ -57,14 +57,16 @@ module.exports = class StylesDBApi {
 
     const styles = await db.styles.findByPk(id, {}, { transaction });
 
-    await styles.update(
-      {
-        Name: data.Name || null,
-        Description: data.Description || null,
-        updatedById: currentUser.id,
-      },
-      { transaction },
-    );
+    const updatePayload = {};
+
+    if (data.Name !== undefined) updatePayload.Name = data.Name;
+
+    if (data.Description !== undefined)
+      updatePayload.Description = data.Description;
+
+    updatePayload.updatedById = currentUser.id;
+
+    await styles.update(updatePayload, { transaction });
 
     return styles;
   }
@@ -137,6 +139,7 @@ module.exports = class StylesDBApi {
   static async findAll(filter, options) {
     const limit = filter.limit || 0;
     let offset = 0;
+    let where = {};
     const currentPage = +filter.page;
 
     offset = currentPage * limit;
@@ -144,7 +147,7 @@ module.exports = class StylesDBApi {
     const orderBy = null;
 
     const transaction = (options && options.transaction) || undefined;
-    let where = {};
+
     let include = [];
 
     if (filter) {
@@ -169,12 +172,7 @@ module.exports = class StylesDBApi {
         };
       }
 
-      if (
-        filter.active === true ||
-        filter.active === 'true' ||
-        filter.active === false ||
-        filter.active === 'false'
-      ) {
+      if (filter.active !== undefined) {
         where = {
           ...where,
           active: filter.active === true || filter.active === 'true',
@@ -206,39 +204,37 @@ module.exports = class StylesDBApi {
       }
     }
 
-    let { rows, count } = options?.countOnly
-      ? {
-          rows: [],
-          count: await db.styles.count({
-            where,
-            include,
-            distinct: true,
-            limit: limit ? Number(limit) : undefined,
-            offset: offset ? Number(offset) : undefined,
-            order:
-              filter.field && filter.sort
-                ? [[filter.field, filter.sort]]
-                : [['createdAt', 'desc']],
-            transaction,
-          }),
-        }
-      : await db.styles.findAndCountAll({
-          where,
-          include,
-          distinct: true,
-          limit: limit ? Number(limit) : undefined,
-          offset: offset ? Number(offset) : undefined,
-          order:
-            filter.field && filter.sort
-              ? [[filter.field, filter.sort]]
-              : [['createdAt', 'desc']],
-          transaction,
-        });
+    const queryOptions = {
+      where,
+      include,
+      distinct: true,
+      order:
+        filter.field && filter.sort
+          ? [[filter.field, filter.sort]]
+          : [['createdAt', 'desc']],
+      transaction: options?.transaction,
+      logging: console.log,
+    };
 
-    return { rows, count };
+    if (!options?.countOnly) {
+      queryOptions.limit = limit ? Number(limit) : undefined;
+      queryOptions.offset = offset ? Number(offset) : undefined;
+    }
+
+    try {
+      const { rows, count } = await db.styles.findAndCountAll(queryOptions);
+
+      return {
+        rows: options?.countOnly ? [] : rows,
+        count: count,
+      };
+    } catch (error) {
+      console.error('Error executing query:', error);
+      throw error;
+    }
   }
 
-  static async findAllAutocomplete(query, limit) {
+  static async findAllAutocomplete(query, limit, offset) {
     let where = {};
 
     if (query) {
@@ -254,6 +250,7 @@ module.exports = class StylesDBApi {
       attributes: ['id', 'id'],
       where,
       limit: limit ? Number(limit) : undefined,
+      offset: offset ? Number(offset) : undefined,
       orderBy: [['id', 'ASC']],
     });
 

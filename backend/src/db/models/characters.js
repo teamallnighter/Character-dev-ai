@@ -45,6 +45,15 @@ module.exports = function (sequelize, DataTypes) {
       through: 'charactersTraitsTraits',
     });
 
+    db.characters.belongsToMany(db.traits, {
+      as: 'traits_filter',
+      foreignKey: {
+        name: 'characters_traitsId',
+      },
+      constraints: false,
+      through: 'charactersTraitsTraits',
+    });
+
     db.characters.belongsToMany(db.scenarios, {
       as: 'scenarios',
       foreignKey: {
@@ -54,8 +63,26 @@ module.exports = function (sequelize, DataTypes) {
       through: 'charactersScenariosScenarios',
     });
 
+    db.characters.belongsToMany(db.scenarios, {
+      as: 'scenarios_filter',
+      foreignKey: {
+        name: 'characters_scenariosId',
+      },
+      constraints: false,
+      through: 'charactersScenariosScenarios',
+    });
+
     db.characters.belongsToMany(db.versions, {
       as: 'versions',
+      foreignKey: {
+        name: 'characters_versionsId',
+      },
+      constraints: false,
+      through: 'charactersVersionsVersions',
+    });
+
+    db.characters.belongsToMany(db.versions, {
+      as: 'versions_filter',
       foreignKey: {
         name: 'characters_versionsId',
       },

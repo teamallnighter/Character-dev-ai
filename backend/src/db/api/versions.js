@@ -63,18 +63,25 @@ module.exports = class VersionsDBApi {
 
     const versions = await db.versions.findByPk(id, {}, { transaction });
 
-    await versions.update(
-      {
-        version_number: data.version_number || null,
-        created_on: data.created_on || null,
-        updatedById: currentUser.id,
-      },
-      { transaction },
-    );
+    const updatePayload = {};
 
-    await versions.setCharacter(data.character || null, {
-      transaction,
-    });
+    if (data.version_number !== undefined)
+      updatePayload.version_number = data.version_number;
+
+    if (data.created_on !== undefined)
+      updatePayload.created_on = data.created_on;
+
+    updatePayload.updatedById = currentUser.id;
+
+    await versions.update(updatePayload, { transaction });
+
+    if (data.character !== undefined) {
+      await versions.setCharacter(
+        data.character,
+
+        { transaction },
+      );
+    }
 
     return versions;
   }
@@ -147,6 +154,7 @@ module.exports = class VersionsDBApi {
   static async findAll(filter, options) {
     const limit = filter.limit || 0;
     let offset = 0;
+    let where = {};
     const currentPage = +filter.page;
 
     offset = currentPage * limit;
@@ -154,11 +162,32 @@ module.exports = class VersionsDBApi {
     const orderBy = null;
 
     const transaction = (options && options.transaction) || undefined;
-    let where = {};
+
     let include = [
       {
         model: db.characters,
         as: 'character',
+
+        where: filter.character
+          ? {
+              [Op.or]: [
+                {
+                  id: {
+                    [Op.in]: filter.character
+                      .split('|')
+                      .map((term) => Utils.uuid(term)),
+                  },
+                },
+                {
+                  name: {
+                    [Op.or]: filter.character
+                      .split('|')
+                      .map((term) => ({ [Op.iLike]: `%${term}%` })),
+                  },
+                },
+              ],
+            }
+          : {},
       },
     ];
 
@@ -205,26 +234,10 @@ module.exports = class VersionsDBApi {
         }
       }
 
-      if (
-        filter.active === true ||
-        filter.active === 'true' ||
-        filter.active === false ||
-        filter.active === 'false'
-      ) {
+      if (filter.active !== undefined) {
         where = {
           ...where,
           active: filter.active === true || filter.active === 'true',
-        };
-      }
-
-      if (filter.character) {
-        const listItems = filter.character.split('|').map((item) => {
-          return Utils.uuid(item);
-        });
-
-        where = {
-          ...where,
-          characterId: { [Op.or]: listItems },
         };
       }
 
@@ -253,39 +266,37 @@ module.exports = class VersionsDBApi {
       }
     }
 
-    let { rows, count } = options?.countOnly
-      ? {
-          rows: [],
-          count: await db.versions.count({
-            where,
-            include,
-            distinct: true,
-            limit: limit ? Number(limit) : undefined,
-            offset: offset ? Number(offset) : undefined,
-            order:
-              filter.field && filter.sort
-                ? [[filter.field, filter.sort]]
-                : [['createdAt', 'desc']],
-            transaction,
-          }),
-        }
-      : await db.versions.findAndCountAll({
-          where,
-          include,
-          distinct: true,
-          limit: limit ? Number(limit) : undefined,
-          offset: offset ? Number(offset) : undefined,
-          order:
-            filter.field && filter.sort
-              ? [[filter.field, filter.sort]]
-              : [['createdAt', 'desc']],
-          transaction,
-        });
+    const queryOptions = {
+      where,
+      include,
+      distinct: true,
+      order:
+        filter.field && filter.sort
+          ? [[filter.field, filter.sort]]
+          : [['createdAt', 'desc']],
+      transaction: options?.transaction,
+      logging: console.log,
+    };
 
-    return { rows, count };
+    if (!options?.countOnly) {
+      queryOptions.limit = limit ? Number(limit) : undefined;
+      queryOptions.offset = offset ? Number(offset) : undefined;
+    }
+
+    try {
+      const { rows, count } = await db.versions.findAndCountAll(queryOptions);
+
+      return {
+        rows: options?.countOnly ? [] : rows,
+        count: count,
+      };
+    } catch (error) {
+      console.error('Error executing query:', error);
+      throw error;
+    }
   }
 
-  static async findAllAutocomplete(query, limit) {
+  static async findAllAutocomplete(query, limit, offset) {
     let where = {};
 
     if (query) {
@@ -301,6 +312,7 @@ module.exports = class VersionsDBApi {
       attributes: ['id', 'version_number'],
       where,
       limit: limit ? Number(limit) : undefined,
+      offset: offset ? Number(offset) : undefined,
       orderBy: [['version_number', 'ASC']],
     });
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useState } from 'react';
-import AsyncSelect from 'react-select/async';
+import { AsyncPaginate } from 'react-select-async-paginate';
 import axios from 'axios';
 
 export const SelectFieldMany = ({
@@ -10,6 +10,7 @@ export const SelectFieldMany = ({
   showField,
 }) => {
   const [value, setValue] = useState([]);
+  const PAGE_SIZE = 100;
 
   useEffect(() => {
     if (field.value?.[0] && typeof field.value[0] !== 'string') {
@@ -17,6 +18,8 @@ export const SelectFieldMany = ({
         field.name,
         field.value.map((el) => el.id),
       );
+    } else if (!field.value || field.value.length === 0) {
+      setValue([]);
     }
   }, [field.name, field.value, form]);
 
@@ -39,16 +42,22 @@ export const SelectFieldMany = ({
     setValue(data);
     form.setFieldValue(
       field.name,
-      data.map((el) => el.value),
+      data.map((el) => el?.value || null),
     );
   };
 
-  async function callApi() {
-    const data = await axios(`/${itemRef}/autocomplete?limit=100`);
-    return data.data.map(mapResponseToValuesAndLabels);
+  async function callApi(inputValue: string, loadedOptions: any[]) {
+    const path = `/${itemRef}/autocomplete?limit=${PAGE_SIZE}&offset=${
+      loadedOptions.length
+    }${inputValue ? `&query=${inputValue}` : ''}`;
+    const { data } = await axios(path);
+    return {
+      options: data.map(mapResponseToValuesAndLabels),
+      hasMore: data.length === PAGE_SIZE,
+    };
   }
   return (
-    <AsyncSelect
+    <AsyncPaginate
       classNames={{
         control: () => 'px-1 py-2',
       }}
@@ -56,9 +65,11 @@ export const SelectFieldMany = ({
       instanceId={useId()}
       value={value}
       isMulti
+      debounceTimeout={1000}
       loadOptions={callApi}
       onChange={handleChange}
       defaultOptions
+      isClearable
     />
   );
 };

@@ -6,7 +6,6 @@ import {
 } from '@mdi/js';
 import Head from 'next/head';
 import React, { ReactElement } from 'react';
-import 'react-toastify/dist/ReactToastify.min.css';
 import CardBox from '../../components/CardBox';
 import LayoutAuthenticated from '../../layouts/Authenticated';
 import SectionMain from '../../components/SectionMain';

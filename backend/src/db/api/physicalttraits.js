@@ -64,16 +64,19 @@ module.exports = class PhysicalttraitsDBApi {
       { transaction },
     );
 
-    await physicalttraits.update(
-      {
-        updatedById: currentUser.id,
-      },
-      { transaction },
-    );
+    const updatePayload = {};
 
-    await physicalttraits.setStyle(data.Style || null, {
-      transaction,
-    });
+    updatePayload.updatedById = currentUser.id;
+
+    await physicalttraits.update(updatePayload, { transaction });
+
+    if (data.Style !== undefined) {
+      await physicalttraits.setStyle(
+        data.Style,
+
+        { transaction },
+      );
+    }
 
     return physicalttraits;
   }
@@ -149,6 +152,7 @@ module.exports = class PhysicalttraitsDBApi {
   static async findAll(filter, options) {
     const limit = filter.limit || 0;
     let offset = 0;
+    let where = {};
     const currentPage = +filter.page;
 
     offset = currentPage * limit;
@@ -156,11 +160,32 @@ module.exports = class PhysicalttraitsDBApi {
     const orderBy = null;
 
     const transaction = (options && options.transaction) || undefined;
-    let where = {};
+
     let include = [
       {
         model: db.styles,
         as: 'Style',
+
+        where: filter.Style
+          ? {
+              [Op.or]: [
+                {
+                  id: {
+                    [Op.in]: filter.Style.split('|').map((term) =>
+                      Utils.uuid(term),
+                    ),
+                  },
+                },
+                {
+                  id: {
+                    [Op.or]: filter.Style.split('|').map((term) => ({
+                      [Op.iLike]: `%${term}%`,
+                    })),
+                  },
+                },
+              ],
+            }
+          : {},
       },
     ];
 
@@ -172,26 +197,10 @@ module.exports = class PhysicalttraitsDBApi {
         };
       }
 
-      if (
-        filter.active === true ||
-        filter.active === 'true' ||
-        filter.active === false ||
-        filter.active === 'false'
-      ) {
+      if (filter.active !== undefined) {
         where = {
           ...where,
           active: filter.active === true || filter.active === 'true',
-        };
-      }
-
-      if (filter.Style) {
-        const listItems = filter.Style.split('|').map((item) => {
-          return Utils.uuid(item);
-        });
-
-        where = {
-          ...where,
-          StyleId: { [Op.or]: listItems },
         };
       }
 
@@ -220,39 +229,39 @@ module.exports = class PhysicalttraitsDBApi {
       }
     }
 
-    let { rows, count } = options?.countOnly
-      ? {
-          rows: [],
-          count: await db.physicalttraits.count({
-            where,
-            include,
-            distinct: true,
-            limit: limit ? Number(limit) : undefined,
-            offset: offset ? Number(offset) : undefined,
-            order:
-              filter.field && filter.sort
-                ? [[filter.field, filter.sort]]
-                : [['createdAt', 'desc']],
-            transaction,
-          }),
-        }
-      : await db.physicalttraits.findAndCountAll({
-          where,
-          include,
-          distinct: true,
-          limit: limit ? Number(limit) : undefined,
-          offset: offset ? Number(offset) : undefined,
-          order:
-            filter.field && filter.sort
-              ? [[filter.field, filter.sort]]
-              : [['createdAt', 'desc']],
-          transaction,
-        });
+    const queryOptions = {
+      where,
+      include,
+      distinct: true,
+      order:
+        filter.field && filter.sort
+          ? [[filter.field, filter.sort]]
+          : [['createdAt', 'desc']],
+      transaction: options?.transaction,
+      logging: console.log,
+    };
 
-    return { rows, count };
+    if (!options?.countOnly) {
+      queryOptions.limit = limit ? Number(limit) : undefined;
+      queryOptions.offset = offset ? Number(offset) : undefined;
+    }
+
+    try {
+      const { rows, count } = await db.physicalttraits.findAndCountAll(
+        queryOptions,
+      );
+
+      return {
+        rows: options?.countOnly ? [] : rows,
+        count: count,
+      };
+    } catch (error) {
+      console.error('Error executing query:', error);
+      throw error;
+    }
   }
 
-  static async findAllAutocomplete(query, limit) {
+  static async findAllAutocomplete(query, limit, offset) {
     let where = {};
 
     if (query) {
@@ -268,6 +277,7 @@ module.exports = class PhysicalttraitsDBApi {
       attributes: ['id', 'id'],
       where,
       limit: limit ? Number(limit) : undefined,
+      offset: offset ? Number(offset) : undefined,
       orderBy: [['id', 'ASC']],
     });
 

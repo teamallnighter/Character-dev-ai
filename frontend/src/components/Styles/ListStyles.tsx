@@ -7,6 +7,7 @@ import ListActionsPopover from '../ListActionsPopover';
 import { useAppSelector } from '../../stores/hooks';
 import { Pagination } from '../Pagination';
 import LoadingSpinner from '../LoadingSpinner';
+import Link from 'next/link';
 
 import { hasPermission } from '../../helpers/userPermissions';
 
@@ -14,8 +15,6 @@ type Props = {
   styles: any[];
   loading: boolean;
   onDelete: (id: string) => void;
-  onView: (id: string) => void;
-  onEdit: (id: string) => void;
   currentPage: number;
   numPages: number;
   onPageChange: (page: number) => void;
@@ -24,8 +23,6 @@ type Props = {
 const ListStyles = ({
   styles,
   loading,
-  onEdit,
-  onView,
   onDelete,
   currentPage,
   numPages,
@@ -52,11 +49,11 @@ const ListStyles = ({
               <div
                 className={`flex rounded  dark:bg-dark-900  border  border-stone-300  items-center overflow-hidden`}
               >
-                <div
+                <Link
+                  href={`/styles/styles-view/?id=${item.id}`}
                   className={
-                    'flex-1 px-4 py-6 h-24 flex items-stretch divide-x-2  divide-stone-300   items-center overflow-hidden`}> dark:divide-dark-700 overflow-x-auto'
+                    'flex-1 px-4 py-6 h-24 flex divide-x-2  divide-stone-300   items-center overflow-hidden`}> dark:divide-dark-700 overflow-x-auto'
                   }
-                  onClick={() => onView(item.id)}
                 >
                   <div className={'flex-1 px-3'}>
                     <p className={'text-xs   text-gray-500 '}>Name</p>
@@ -67,11 +64,9 @@ const ListStyles = ({
                     <p className={'text-xs   text-gray-500 '}>Description</p>
                     <p className={'line-clamp-2'}>{item.Description}</p>
                   </div>
-                </div>
+                </Link>
                 <ListActionsPopover
                   onDelete={onDelete}
-                  onView={onView}
-                  onEdit={onEdit}
                   itemId={item.id}
                   pathEdit={`/styles/styles-edit/?id=${item.id}`}
                   pathView={`/styles/styles-view/?id=${item.id}`}

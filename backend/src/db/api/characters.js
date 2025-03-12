@@ -97,30 +97,36 @@ module.exports = class CharactersDBApi {
 
     const characters = await db.characters.findByPk(id, {}, { transaction });
 
-    await characters.update(
-      {
-        name: data.name || null,
-        Description: data.Description || null,
-        updatedById: currentUser.id,
-      },
-      { transaction },
-    );
+    const updatePayload = {};
 
-    await characters.setCreator(data.creator || null, {
-      transaction,
-    });
+    if (data.name !== undefined) updatePayload.name = data.name;
 
-    await characters.setTraits(data.traits || [], {
-      transaction,
-    });
+    if (data.Description !== undefined)
+      updatePayload.Description = data.Description;
 
-    await characters.setScenarios(data.scenarios || [], {
-      transaction,
-    });
+    updatePayload.updatedById = currentUser.id;
 
-    await characters.setVersions(data.versions || [], {
-      transaction,
-    });
+    await characters.update(updatePayload, { transaction });
+
+    if (data.creator !== undefined) {
+      await characters.setCreator(
+        data.creator,
+
+        { transaction },
+      );
+    }
+
+    if (data.traits !== undefined) {
+      await characters.setTraits(data.traits, { transaction });
+    }
+
+    if (data.scenarios !== undefined) {
+      await characters.setScenarios(data.scenarios, { transaction });
+    }
+
+    if (data.versions !== undefined) {
+      await characters.setVersions(data.versions, { transaction });
+    }
 
     await FileDBApi.replaceRelationFiles(
       {
@@ -223,6 +229,7 @@ module.exports = class CharactersDBApi {
   static async findAll(filter, options) {
     const limit = filter.limit || 0;
     let offset = 0;
+    let where = {};
     const currentPage = +filter.page;
 
     offset = currentPage * limit;
@@ -230,56 +237,47 @@ module.exports = class CharactersDBApi {
     const orderBy = null;
 
     const transaction = (options && options.transaction) || undefined;
-    let where = {};
+
     let include = [
       {
         model: db.users,
         as: 'creator',
+
+        where: filter.creator
+          ? {
+              [Op.or]: [
+                {
+                  id: {
+                    [Op.in]: filter.creator
+                      .split('|')
+                      .map((term) => Utils.uuid(term)),
+                  },
+                },
+                {
+                  firstName: {
+                    [Op.or]: filter.creator
+                      .split('|')
+                      .map((term) => ({ [Op.iLike]: `%${term}%` })),
+                  },
+                },
+              ],
+            }
+          : {},
       },
 
       {
         model: db.traits,
         as: 'traits',
-        through: filter.traits
-          ? {
-              where: {
-                [Op.or]: filter.traits.split('|').map((item) => {
-                  return { ['Id']: Utils.uuid(item) };
-                }),
-              },
-            }
-          : null,
-        required: filter.traits ? true : null,
       },
 
       {
         model: db.scenarios,
         as: 'scenarios',
-        through: filter.scenarios
-          ? {
-              where: {
-                [Op.or]: filter.scenarios.split('|').map((item) => {
-                  return { ['Id']: Utils.uuid(item) };
-                }),
-              },
-            }
-          : null,
-        required: filter.scenarios ? true : null,
       },
 
       {
         model: db.versions,
         as: 'versions',
-        through: filter.versions
-          ? {
-              where: {
-                [Op.or]: filter.versions.split('|').map((item) => {
-                  return { ['Id']: Utils.uuid(item) };
-                }),
-              },
-            }
-          : null,
-        required: filter.versions ? true : null,
       },
 
       {
@@ -314,27 +312,107 @@ module.exports = class CharactersDBApi {
         };
       }
 
-      if (
-        filter.active === true ||
-        filter.active === 'true' ||
-        filter.active === false ||
-        filter.active === 'false'
-      ) {
+      if (filter.active !== undefined) {
         where = {
           ...where,
           active: filter.active === true || filter.active === 'true',
         };
       }
 
-      if (filter.creator) {
-        const listItems = filter.creator.split('|').map((item) => {
-          return Utils.uuid(item);
-        });
+      if (filter.traits) {
+        const searchTerms = filter.traits.split('|');
 
-        where = {
-          ...where,
-          creatorId: { [Op.or]: listItems },
-        };
+        include = [
+          {
+            model: db.traits,
+            as: 'traits_filter',
+            required: searchTerms.length > 0,
+            where:
+              searchTerms.length > 0
+                ? {
+                    [Op.or]: [
+                      {
+                        id: {
+                          [Op.in]: searchTerms.map((term) => Utils.uuid(term)),
+                        },
+                      },
+                      {
+                        description: {
+                          [Op.or]: searchTerms.map((term) => ({
+                            [Op.iLike]: `%${term}%`,
+                          })),
+                        },
+                      },
+                    ],
+                  }
+                : undefined,
+          },
+          ...include,
+        ];
+      }
+
+      if (filter.scenarios) {
+        const searchTerms = filter.scenarios.split('|');
+
+        include = [
+          {
+            model: db.scenarios,
+            as: 'scenarios_filter',
+            required: searchTerms.length > 0,
+            where:
+              searchTerms.length > 0
+                ? {
+                    [Op.or]: [
+                      {
+                        id: {
+                          [Op.in]: searchTerms.map((term) => Utils.uuid(term)),
+                        },
+                      },
+                      {
+                        title: {
+                          [Op.or]: searchTerms.map((term) => ({
+                            [Op.iLike]: `%${term}%`,
+                          })),
+                        },
+                      },
+                    ],
+                  }
+                : undefined,
+          },
+          ...include,
+        ];
+      }
+
+      if (filter.versions) {
+        const searchTerms = filter.versions.split('|');
+
+        include = [
+          {
+            model: db.versions,
+            as: 'versions_filter',
+            required: searchTerms.length > 0,
+            where:
+              searchTerms.length > 0
+                ? {
+                    [Op.or]: [
+                      {
+                        id: {
+                          [Op.in]: searchTerms.map((term) => Utils.uuid(term)),
+                        },
+                      },
+                      {
+                        version_number: {
+                          [Op.or]: searchTerms.map((term) => ({
+                            [Op.iLike]: `%${term}%`,
+                          })),
+                        },
+                      },
+                    ],
+                  }
+                : undefined,
+          },
+          ...include,
+        ];
       }
 
       if (filter.createdAtRange) {
@@ -362,39 +440,37 @@ module.exports = class CharactersDBApi {
       }
     }
 
-    let { rows, count } = options?.countOnly
-      ? {
-          rows: [],
-          count: await db.characters.count({
-            where,
-            include,
-            distinct: true,
-            limit: limit ? Number(limit) : undefined,
-            offset: offset ? Number(offset) : undefined,
-            order:
-              filter.field && filter.sort
-                ? [[filter.field, filter.sort]]
-                : [['createdAt', 'desc']],
-            transaction,
-          }),
-        }
-      : await db.characters.findAndCountAll({
-          where,
-          include,
-          distinct: true,
-          limit: limit ? Number(limit) : undefined,
-          offset: offset ? Number(offset) : undefined,
-          order:
-            filter.field && filter.sort
-              ? [[filter.field, filter.sort]]
-              : [['createdAt', 'desc']],
-          transaction,
-        });
+    const queryOptions = {
+      where,
+      include,
+      distinct: true,
+      order:
+        filter.field && filter.sort
+          ? [[filter.field, filter.sort]]
+          : [['createdAt', 'desc']],
+      transaction: options?.transaction,
+      logging: console.log,
+    };
 
-    return { rows, count };
+    if (!options?.countOnly) {
+      queryOptions.limit = limit ? Number(limit) : undefined;
+      queryOptions.offset = offset ? Number(offset) : undefined;
+    }
+
+    try {
+      const { rows, count } = await db.characters.findAndCountAll(queryOptions);
+
+      return {
+        rows: options?.countOnly ? [] : rows,
+        count: count,
+      };
+    } catch (error) {
+      console.error('Error executing query:', error);
+      throw error;
+    }
   }
 
-  static async findAllAutocomplete(query, limit) {
+  static async findAllAutocomplete(query, limit, offset) {
     let where = {};
 
     if (query) {
@@ -410,6 +486,7 @@ module.exports = class CharactersDBApi {
       attributes: ['id', 'name'],
       where,
       limit: limit ? Number(limit) : undefined,
+      offset: offset ? Number(offset) : undefined,
       orderBy: [['name', 'ASC']],
     });
 

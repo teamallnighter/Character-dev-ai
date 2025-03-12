@@ -125,6 +125,7 @@ const PermissionsTablesPage = () => {
             <div id='delete-rows-button'></div>
           </div>
         </CardBox>
+
         <CardBox className='mb-6' hasTable>
           <TablePermissions
             filterItems={filterItems}

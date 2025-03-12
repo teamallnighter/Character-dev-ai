@@ -32,6 +32,7 @@ const VersionsTablesPage = () => {
     { label: 'VersionNumber', title: 'version_number' },
 
     { label: 'CreatedOn', title: 'created_on', date: 'true' },
+
     { label: 'Character', title: 'character' },
   ]);
 
@@ -131,6 +132,7 @@ const VersionsTablesPage = () => {
             <Link href={'/versions/versions-table'}>Switch to Table</Link>
           </div>
         </CardBox>
+
         <CardBox className='mb-6' hasTable>
           <TableVersions
             filterItems={filterItems}

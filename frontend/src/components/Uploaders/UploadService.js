@@ -71,6 +71,12 @@ export default class FileUploader {
 
     const privateUrl = `${path}/${filename}`;
 
+    console.log(
+      'process.env.NODE_ENV in uploadToServer function',
+      process.env.NODE_ENV,
+    );
+    console.log('baseURLApi in uploadToServer function', baseURLApi);
+
     return `${baseURLApi}/file/download?privateUrl=${privateUrl}`;
   }
 }

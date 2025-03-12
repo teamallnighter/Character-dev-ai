@@ -27,7 +27,7 @@ const CharactersData = [
 
     // type code here for "relation_many" field
 
-    Description: 'Antoine Laurent Lavoisier',
+    Description: 'James Watson',
   },
 
   {
@@ -43,7 +43,7 @@ const CharactersData = [
 
     // type code here for "relation_many" field
 
-    Description: 'Werner Heisenberg',
+    Description: 'Louis Victor de Broglie',
   },
 
   {
@@ -59,7 +59,7 @@ const CharactersData = [
 
     // type code here for "relation_many" field
 
-    Description: 'Max Delbruck',
+    Description: 'Jean Baptiste Lamarck',
   },
 
   {
@@ -75,7 +75,7 @@ const CharactersData = [
 
     // type code here for "relation_many" field
 
-    Description: 'Frederick Gowland Hopkins',
+    Description: 'Ludwig Boltzmann',
   },
 
   {
@@ -91,7 +91,7 @@ const CharactersData = [
 
     // type code here for "relation_many" field
 
-    Description: 'Alfred Binet',
+    Description: 'Claude Levi-Strauss',
   },
 ];
 
@@ -216,33 +216,33 @@ const PhysicalttraitsData = [
 
 const StylesData = [
   {
+    Name: 'Neils Bohr',
+
+    Description: 'Lucretius',
+  },
+
+  {
+    Name: 'Heike Kamerlingh Onnes',
+
+    Description: 'Gertrude Belle Elion',
+  },
+
+  {
     Name: 'Louis Victor de Broglie',
 
-    Description: 'Michael Faraday',
+    Description: 'Stephen Hawking',
   },
 
   {
-    Name: 'Lynn Margulis',
+    Name: 'Frederick Sanger',
 
-    Description: 'Albert Einstein',
+    Description: 'John Bardeen',
   },
 
   {
-    Name: 'Trofim Lysenko',
+    Name: 'Alfred Binet',
 
-    Description: 'Gustav Kirchhoff',
-  },
-
-  {
-    Name: 'Justus Liebig',
-
-    Description: 'Edward O. Wilson',
-  },
-
-  {
-    Name: 'Comte de Buffon',
-
-    Description: 'Charles Darwin',
+    Description: 'Marcello Malpighi',
   },
 ];
 

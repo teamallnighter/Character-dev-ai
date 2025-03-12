@@ -33,6 +33,10 @@ const CharactersTablesPage = () => {
     { label: 'Description', title: 'Description' },
 
     { label: 'Creator', title: 'creator' },
+
+    { label: 'Traits', title: 'traits' },
+    { label: 'Scenarios', title: 'scenarios' },
+    { label: 'Versions', title: 'versions' },
   ]);
 
   const hasCreatePermission =

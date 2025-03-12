@@ -301,7 +301,8 @@ router.get(
   wrapAsync(async (req, res) => {
     const filetype = req.query.filetype;
 
-    const payload = await VersionsDBApi.findAll(req.query);
+    const currentUser = req.currentUser;
+    const payload = await VersionsDBApi.findAll(req.query, { currentUser });
     if (filetype && filetype === 'csv') {
       const fields = ['id', 'version_number', 'created_on'];
       const opts = { fields };
@@ -346,11 +347,11 @@ router.get(
 router.get(
   '/count',
   wrapAsync(async (req, res) => {
-    const payload = await VersionsDBApi.findAll(
-      req.query,
-
-      { countOnly: true },
-    );
+    const currentUser = req.currentUser;
+    const payload = await VersionsDBApi.findAll(req.query, null, {
+      countOnly: true,
+      currentUser,
+    });
 
     res.status(200).send(payload);
   }),
@@ -385,6 +386,7 @@ router.get('/autocomplete', async (req, res) => {
   const payload = await VersionsDBApi.findAllAutocomplete(
     req.query.query,
     req.query.limit,
+    req.query.offset,
   );
 
   res.status(200).send(payload);

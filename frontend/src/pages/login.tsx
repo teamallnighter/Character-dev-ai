@@ -18,7 +18,6 @@ import { findMe, loginUser, resetAction } from '../stores/authSlice';
 import { useAppDispatch, useAppSelector } from '../stores/hooks';
 import Link from 'next/link';
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
 import { getPexelsImage, getPexelsVideo } from '../helpers/pexels';
 
 export default function Login() {

@@ -42,6 +42,10 @@ const IntroGuide: React.FC<IntroGuideProps> = ({
         initialStep={0}
         onExit={handleExit}
         onChange={handleStepChange}
+        options={{
+          scrollToElement: true,
+          scrollPadding: 50,
+        }}
       />
     </>
   );

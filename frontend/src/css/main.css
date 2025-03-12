@@ -10,6 +10,7 @@
 @import '_calendar.css';
 @import '_select-dropdown.css';
 @import '_theme.css';
+@import '_rich-text.css';
 
 .introjs-tooltip {
   @apply min-w-[400px] max-w-[480px] p-2 !important;
